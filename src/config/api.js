@@ -3,6 +3,10 @@ import axios from 'axios';
 // Configuración para Railway o desarrollo local
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
+// Debug: Ver qué URL se está usando
+console.log('🔧 API_BASE_URL:', API_BASE_URL);
+console.log('🔧 VITE_API_BASE_URL from env:', import.meta.env.VITE_API_BASE_URL);
+
 export { API_BASE_URL };
 
 export const http = axios.create({
