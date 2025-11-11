@@ -16,6 +16,15 @@ if (!existsSync(distPath)) {
   process.exit(1);
 }
 
+// Health check endpoint (antes de static files)
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    port: PORT 
+  });
+});
+
 // Servir archivos estáticos de la carpeta dist
 app.use(express.static(distPath, {
   maxAge: '1d',
@@ -31,6 +40,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
   console.log(`🌐 Sirviendo desde: ${distPath}`);
   console.log(`🚀 Aplicación lista`);
+  console.log(`💚 Health check disponible en /health`);
 });
 
 // Manejo de errores
@@ -39,3 +49,30 @@ server.on('error', (error) => {
   process.exit(1);
 });
 
+// Manejo de señales de terminación
+const shutdown = (signal) => {
+  console.log(`\n⚠️  Recibida señal ${signal}, cerrando servidor gracefully...`);
+  server.close(() => {
+    console.log('✅ Servidor cerrado correctamente');
+    process.exit(0);
+  });
+  
+  // Forzar cierre después de 10 segundos
+  setTimeout(() => {
+    console.error('❌ Forzando cierre del servidor');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+// Mantener el proceso vivo
+process.on('uncaughtException', (error) => {
+  console.error('❌ Excepción no capturada:', error);
+  shutdown('uncaughtException');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Promise rechazada no manejada:', reason);
+});
