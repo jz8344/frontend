@@ -2,18 +2,14 @@
 nixPkgs = ['nodejs_20']
 
 [phases.install]
-cmds = [
-  'npm install --verbose'
-]
+cmds = ['npm install']
 
 [phases.build]
-cmds = [
-  'npm run build --verbose',
-  'ls -la dist || dir dist'
-]
+cmds = ['npm run build']
 
 [start]
 cmd = 'node server.js'
 
-[variables]
-NODE_ENV = 'production'
+[staticAssets]
+# Deshabilitar Caddy - usaremos nuestro propio servidor Express
+enable = false
