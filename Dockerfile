@@ -15,8 +15,5 @@ COPY . .
 # Build de producción
 RUN npm run build
 
-# Exponer puerto
-EXPOSE 5173
-
 # Comando de inicio
 CMD ["node", "server.js"]
