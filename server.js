@@ -53,10 +53,14 @@ app.get('*', (req, res) => {
 });
 
 const server = app.listen(PORT, '0.0.0.0', () => {
+  const address = server.address();
   console.log(`✅ Servidor corriendo en puerto ${PORT}`);
   console.log(`🌐 Sirviendo desde: ${distPath}`);
   console.log(`🚀 Aplicación lista`);
   console.log(`💚 Health check disponible en /health`);
+  console.log(`📍 Address: ${JSON.stringify(address)}`);
+  console.log(`🔧 ENV.PORT: ${process.env.PORT}`);
+  console.log(`🌍 Listening on: http://0.0.0.0:${PORT}`);
 });
 
 // Manejo de errores
