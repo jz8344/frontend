@@ -15,5 +15,5 @@ COPY . .
 # Build de producción
 RUN npm run build
 
-# Comando de inicio
-CMD ["node", "server.js"]
+# Comando de inicio - cambiar temporalmente para test
+CMD ["node", "test-server.js"]

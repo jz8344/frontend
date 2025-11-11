@@ -143,7 +143,7 @@
                       <div class="current-file-preview">
                         <img 
                           v-if="isImage(form[field.key])"
-                          :src="`http://localhost:8000/${form[field.key]}`" 
+                          :src="`${API_BASE_URL}/${form[field.key]}`" 
                           alt="Current"
                           class="img-thumbnail"
                           style="max-width: 150px; max-height: 150px;"
@@ -280,6 +280,7 @@
 
 <script setup>
 import { ref, reactive, watch, computed } from 'vue'
+import { API_BASE_URL } from '@/config/api'
 
 const props = defineProps({
   config: {

@@ -135,7 +135,7 @@
           <!-- Imagen de la unidad si existe -->
           <div v-if="config.displayFields?.[0]?.type === 'image' && getDisplayValue(item, config.displayFields[0])" class="card-img-top-container">
             <img 
-              :src="`http://localhost:8000/${getDisplayValue(item, config.displayFields[0])}`"
+              :src="`${API_BASE_URL}/${getDisplayValue(item, config.displayFields[0])}`"
               :alt="item.matricula || 'Imagen'"
               class="card-img-top"
               style="height: 150px; object-fit: cover;"
@@ -267,7 +267,7 @@
                 <div v-else-if="field.type === 'image'">
                   <img 
                     v-if="getDisplayValue(item, field)" 
-                    :src="`http://localhost:8000/${getDisplayValue(item, field)}`"
+                    :src="`${API_BASE_URL}/${getDisplayValue(item, field)}`"
                     :alt="item.matricula || 'Imagen'"
                     class="table-image"
                     style="width: 50px; height: 40px; object-fit: cover; border-radius: 4px;"
@@ -323,7 +323,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue';
+import { API_BASE_URL } from '@/config/api';
 
 const props = defineProps({
   config: {
