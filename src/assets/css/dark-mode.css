@@ -1,0 +1,364 @@
+/* Global Dark Mode Styles for TrailynSafe Admin */
+
+/* Root variables for consistency */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #1a202c;
+  --bs-body-color: #e2e8f0;
+  --bs-border-color: #4a5568;
+  --bs-secondary-color: #a0aec0;
+}
+
+/* Global text colors */
+[data-bs-theme="dark"] {
+  background-color: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+
+[data-bs-theme="dark"] body {
+  background-color: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+
+/* Text utilities */
+[data-bs-theme="dark"] .text-muted {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+[data-bs-theme="dark"] .text-dark {
+  color: var(--bs-body-color) !important;
+}
+
+/* Form controls */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .form-check-input {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  background-color: #2d3748;
+  border-color: var(--bs-primary);
+  color: var(--bs-body-color);
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+}
+
+[data-bs-theme="dark"] .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Tables */
+[data-bs-theme="dark"] .table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--bs-body-color);
+  --bs-table-border-color: #4a5568;
+  --bs-table-striped-bg: rgba(255, 255, 255, 0.05);
+  --bs-table-hover-bg: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] .table > :not(caption) > * > * {
+  border-bottom-color: #4a5568;
+}
+
+/* Cards */
+[data-bs-theme="dark"] .card {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .card-header {
+  background-color: #374151;
+  border-bottom-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .card-footer {
+  background-color: #374151;
+  border-top-color: #4a5568;
+}
+
+/* Alerts */
+[data-bs-theme="dark"] .alert {
+  border-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .alert-primary {
+  background-color: rgba(13, 110, 253, 0.2);
+  border-color: rgba(13, 110, 253, 0.5);
+  color: #9db4ff;
+}
+
+[data-bs-theme="dark"] .alert-success {
+  background-color: rgba(25, 135, 84, 0.2);
+  border-color: rgba(25, 135, 84, 0.5);
+  color: #a3cfbb;
+}
+
+[data-bs-theme="dark"] .alert-warning {
+  background-color: rgba(255, 193, 7, 0.2);
+  border-color: rgba(255, 193, 7, 0.5);
+  color: #ffda6a;
+}
+
+[data-bs-theme="dark"] .alert-danger {
+  background-color: rgba(220, 53, 69, 0.2);
+  border-color: rgba(220, 53, 69, 0.5);
+  color: #f1aeb5;
+}
+
+/* Modals */
+[data-bs-theme="dark"] .modal-content {
+  background-color: #2d3748;
+  color: var(--bs-body-color);
+  border-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .modal-header {
+  border-bottom-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .modal-footer {
+  border-top-color: #4a5568;
+}
+
+/* Dropdowns */
+[data-bs-theme="dark"] .dropdown-menu {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover,
+[data-bs-theme="dark"] .dropdown-item:focus {
+  background-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .dropdown-divider {
+  border-top-color: #4a5568;
+}
+
+/* Buttons */
+[data-bs-theme="dark"] .btn-outline-secondary {
+  color: #a0aec0;
+  border-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+  background-color: #4a5568;
+  border-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+/* Botón dark específico - En modo oscuro debe ser blanco */
+[data-bs-theme="dark"] .btn-outline-dark {
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  background-color: transparent;
+}
+
+[data-bs-theme="dark"] .btn-outline-dark:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+/* Asegurar que en modo claro el botón dark sea negro */
+.btn-outline-dark {
+  color: #000000;
+  border-color: #000000;
+}
+
+.btn-outline-dark:hover {
+  background-color: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+/* Lists */
+[data-bs-theme="dark"] .list-group-item {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .list-group-item:hover {
+  background-color: #374151;
+}
+
+/* Navigation */
+[data-bs-theme="dark"] .nav-link {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+[data-bs-theme="dark"] .nav-link:hover,
+[data-bs-theme="dark"] .nav-link:focus {
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link {
+  border-color: transparent;
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link.active {
+  background-color: #2d3748;
+  border-color: #4a5568 #4a5568 transparent;
+  color: var(--bs-body-color);
+}
+
+/* Breadcrumb */
+[data-bs-theme="dark"] .breadcrumb {
+  background-color: transparent;
+}
+
+[data-bs-theme="dark"] .breadcrumb-item + .breadcrumb-item::before {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Offcanvas */
+[data-bs-theme="dark"] .offcanvas {
+  background-color: #2d3748;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .offcanvas-header {
+  border-bottom-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .offcanvas-body {
+  color: var(--bs-body-color);
+}
+
+/* Pagination */
+[data-bs-theme="dark"] .page-link {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .page-link:hover {
+  background-color: #374151;
+  border-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .page-item.active .page-link {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+}
+
+/* Spinner colors for dark mode */
+[data-bs-theme="dark"] .spinner-border {
+  color: var(--bs-primary);
+}
+
+/* Badge colors */
+[data-bs-theme="dark"] .badge {
+  color: var(--bs-body-color);
+}
+
+/* Close button */
+[data-bs-theme="dark"] .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Input group */
+[data-bs-theme="dark"] .input-group-text {
+  background-color: #374151;
+  border-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+/* Progress bars */
+[data-bs-theme="dark"] .progress {
+  background-color: #374151;
+}
+
+/* Accordion */
+[data-bs-theme="dark"] .accordion-item {
+  background-color: #2d3748;
+  border-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .accordion-button {
+  background-color: #2d3748;
+  color: var(--bs-body-color);
+  border-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .accordion-button:not(.collapsed) {
+  background-color: #374151;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .accordion-body {
+  background-color: #2d3748;
+  color: var(--bs-body-color);
+}
+
+/* Tabs */
+[data-bs-theme="dark"] .nav-tabs {
+  border-bottom-color: #4a5568;
+}
+
+[data-bs-theme="dark"] .tab-content {
+  background-color: #2d3748;
+  color: var(--bs-body-color);
+}
+
+/* Toast */
+[data-bs-theme="dark"] .toast {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="dark"] .toast-header {
+  background-color: #374151;
+  border-bottom-color: #4a5568;
+  color: var(--bs-body-color);
+}
+
+/* Additional utility classes */
+[data-bs-theme="dark"] .bg-light {
+  background-color: #374151 !important;
+}
+
+[data-bs-theme="dark"] .bg-white {
+  background-color: #2d3748 !important;
+}
+
+[data-bs-theme="dark"] .border {
+  border-color: #4a5568 !important;
+}
+
+[data-bs-theme="dark"] .border-top,
+[data-bs-theme="dark"] .border-bottom,
+[data-bs-theme="dark"] .border-start,
+[data-bs-theme="dark"] .border-end {
+  border-color: #4a5568 !important;
+}
+
+/* Scrollbar styling for dark mode */
+[data-bs-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #4a5568;
+  border-radius: 4px;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}

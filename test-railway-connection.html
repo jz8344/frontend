@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Railway API Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Test de Conexión Railway API</h1>
+    
+    <div class="test-box">
+        <h3>API URL: <code>https://web-production-86356.up.railway.app/api</code></h3>
+        
+        <button onclick="testConnection()">1. Test Conexión Básica</button>
+        <button onclick="testHealth()">2. Test Health Check</button>
+        <button onclick="testCORS()">3. Test CORS</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://web-production-86356.up.railway.app/api';
+        
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+        }
+
+        async function testConnection() {
+            showResult('🔄 Probando conexión básica...', 'info');
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.text();
+                showResult(
+                    `✅ CONEXIÓN EXITOSA\n\n` +
+                    `Status: ${response.status}\n` +
+                    `Response: ${data}`,
+                    'success'
+                );
+            } catch (error) {
+                showResult(
+                    `❌ ERROR DE CONEXIÓN\n\n` +
+                    `${error.message}\n\n` +
+                    `Posibles causas:\n` +
+                    `1. El servidor Laravel no está corriendo en Railway\n` +
+                    `2. CORS no configurado correctamente\n` +
+                    `3. URL incorrecta`,
+                    'error'
+                );
+            }
+        }
+
+        async function testHealth() {
+            showResult('🔄 Probando endpoint de salud...', 'info');
+            try {
+                const response = await fetch(`${API_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                showResult(
+                    `✅ HEALTH CHECK\n\n` +
+                    `Status: ${response.status}\n` +
+                    `Data: ${JSON.stringify(data, null, 2)}`,
+                    'success'
+                );
+            } catch (error) {
+                showResult(
+                    `⚠️ Endpoint /health no existe\n\n` +
+                    `Esto es normal si no has creado el endpoint.\n` +
+                    `Error: ${error.message}`,
+                    'error'
+                );
+            }
+        }
+
+        async function testCORS() {
+            showResult('🔄 Probando configuración CORS...', 'info');
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type, Authorization'
+                    }
+                });
+                
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+                
+                showResult(
+                    `✅ CORS CONFIGURADO\n\n` +
+                    `Headers CORS:\n` +
+                    JSON.stringify(corsHeaders, null, 2),
+                    'success'
+                );
+            } catch (error) {
+                showResult(
+                    `❌ ERROR CORS\n\n` +
+                    `${error.message}`,
+                    'error'
+                );
+            }
+        }
+    </script>
+</body>
+</html>

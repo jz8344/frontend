@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Rutas Protegidas - TrailynSafe</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e1e5e9;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .controls {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        #testOutput {
+            background: #1e1e1e;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-info { background: #17a2b8; }
+        
+        .progress {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .test-info {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .test-info h3 {
+            margin: 0 0 10px 0;
+            color: #1976d2;
+        }
+        
+        .test-info ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .test-info li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Test de Rutas Protegidas</h1>
+            <p>Sistema de pruebas para validar la seguridad de endpoints</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-info">
+                <h3>📋 Información del Test</h3>
+                <p>Este test verificará:</p>
+                <ul>
+                    <li><strong>Rutas de Usuario:</strong> Acceso con token de usuario regular</li>
+                    <li><strong>Rutas de Admin:</strong> Acceso con token de administrador</li>
+                    <li><strong>Seguridad Cruzada:</strong> Prevención de acceso no autorizado entre roles</li>
+                    <li><strong>Middlewares:</strong> Funcionamiento correcto de protecciones</li>
+                </ul>
+                <p><strong>Nota:</strong> Se crearán usuarios de prueba temporales para este test.</p>
+            </div>
+            
+            <div class="test-section">
+                <div class="section-header">
+                    🎮 Controles de Test
+                </div>
+                <div class="controls">
+                    <button id="runTests" class="btn">
+                        🚀 Ejecutar Tests Completos
+                    </button>
+                    <button id="runUserTests" class="btn">
+                        👤 Solo Tests de Usuario
+                    </button>
+                    <button id="runAdminTests" class="btn">
+                        👑 Solo Tests de Admin
+                    </button>
+                    <button id="clearOutput" class="btn btn-danger">
+                        🗑️ Limpiar Consola
+                    </button>
+                </div>
+                <div class="progress">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <div class="section-header">
+                    📺 Salida del Test
+                </div>
+                <div id="testOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import RouteTester from './routeProtectionTest.js';
+        
+        class TestUI {
+            constructor() {
+                this.output = document.getElementById('testOutput');
+                this.progressBar = document.getElementById('progressBar');
+                this.setupEventListeners();
+                this.tester = new RouteTester();
+                this.overrideConsole();
+            }
+            
+            setupEventListeners() {
+                document.getElementById('runTests').addEventListener('click', () => this.runFullTests());
+                document.getElementById('runUserTests').addEventListener('click', () => this.runUserTests());
+                document.getElementById('runAdminTests').addEventListener('click', () => this.runAdminTests());
+                document.getElementById('clearOutput').addEventListener('click', () => this.clearOutput());
+            }
+            
+            overrideConsole() {
+                const originalLog = console.log;
+                console.log = (...args) => {
+                    originalLog.apply(console, args);
+                    this.appendToOutput(args.join(' '));
+                };
+            }
+            
+            appendToOutput(message) {
+                const formattedMessage = this.formatMessage(message);
+                this.output.innerHTML += formattedMessage + '\n';
+                this.output.scrollTop = this.output.scrollHeight;
+            }
+            
+            formatMessage(message) {
+                let formatted = message
+                    .replace(/\x1b\[31m/g, '<span style="color: #ff6b6b;">') 
+                    .replace(/\x1b\[32m/g, '<span style="color: #51cf66;">') 
+                    .replace(/\x1b\[33m/g, '<span style="color: #ffd43b;">') 
+                    .replace(/\x1b\[34m/g, '<span style="color: #339af0;">') 
+                    .replace(/\x1b\[35m/g, '<span style="color: #e599f7;">') 
+                    .replace(/\x1b\[36m/g, '<span style="color: #3bc9db;">') 
+                    .replace(/\x1b\[37m/g, '<span style="color: #f8f9fa;">') 
+                    .replace(/\x1b\[0m/g, '</span>'); 
+                
+                formatted = formatted
+                    .replace(/✅/g, '<span class="status-indicator status-success"></span>✅')
+                    .replace(/❌/g, '<span class="status-indicator status-error"></span>❌')
+                    .replace(/⚠️/g, '<span class="status-indicator status-warning"></span>⚠️')
+                    .replace(/🚀/g, '<span class="status-indicator status-info"></span>🚀');
+                
+                return formatted;
+            }
+            
+            updateProgress(percentage) {
+                this.progressBar.style.width = percentage + '%';
+            }
+            
+            clearOutput() {
+                this.output.innerHTML = '';
+                this.updateProgress(0);
+            }
+            
+            async runFullTests() {
+                this.disableButtons(true);
+                this.clearOutput();
+                this.appendToOutput('🚀 Iniciando tests completos...\n');
+                
+                try {
+                    await this.tester.runAllTests();
+                } catch (error) {
+                    this.appendToOutput(`❌ Error: ${error.message}`);
+                } finally {
+                    this.disableButtons(false);
+                    this.updateProgress(100);
+                }
+            }
+            
+            async runUserTests() {
+                this.disableButtons(true);
+                this.clearOutput();
+                this.appendToOutput('👤 Iniciando tests de usuario...\n');
+                
+                try {
+                    await this.tester.setupTestUsers();
+                    await this.tester.testUserRoutes();
+                    this.tester.showSummary();
+                } catch (error) {
+                    this.appendToOutput(`❌ Error: ${error.message}`);
+                } finally {
+                    this.disableButtons(false);
+                    this.updateProgress(100);
+                }
+            }
+            
+            async runAdminTests() {
+                this.disableButtons(true);
+                this.clearOutput();
+                this.appendToOutput('👑 Iniciando tests de admin...\n');
+                
+                try {
+                    await this.tester.setupTestUsers();
+                    await this.tester.testAdminRoutes();
+                    this.tester.showSummary();
+                } catch (error) {
+                    this.appendToOutput(`❌ Error: ${error.message}`);
+                } finally {
+                    this.disableButtons(false);
+                    this.updateProgress(100);
+                }
+            }
+            
+            disableButtons(disabled) {
+                const buttons = document.querySelectorAll('.btn:not(#clearOutput)');
+                buttons.forEach(btn => btn.disabled = disabled);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            new TestUI();
+        });
+    </script>
+</body>
+</html>
