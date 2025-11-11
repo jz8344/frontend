@@ -10,6 +10,12 @@ const app = express();
 const PORT = process.env.PORT || 5173;
 const distPath = join(__dirname, 'dist');
 
+// Middleware de logging para diagnóstico
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.url} - IP: ${req.ip}`);
+  next();
+});
+
 // Verificar que la carpeta dist existe
 if (!existsSync(distPath)) {
   console.error('❌ Error: La carpeta dist no existe. Ejecuta "npm run build" primero.');
@@ -21,7 +27,17 @@ app.get('/health', (req, res) => {
   res.status(200).json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    port: PORT 
+    port: PORT,
+    env: process.env.NODE_ENV || 'production'
+  });
+});
+
+// Test endpoint para debugging
+app.get('/api/test', (req, res) => {
+  res.status(200).json({ 
+    message: 'Server is working!',
+    headers: req.headers,
+    port: PORT
   });
 });
 
