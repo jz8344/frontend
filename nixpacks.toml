@@ -9,7 +9,3 @@ cmds = ['npm run build']
 
 [start]
 cmd = 'node server.js'
-
-[staticAssets]
-# Deshabilitar Caddy - usaremos nuestro propio servidor Express
-enable = false
