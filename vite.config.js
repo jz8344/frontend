@@ -9,16 +9,28 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   server: {
-    host: '0.0.0.0',     // escucha en todas las IPs
-    port: 5173,          // cámbialo si ya está ocupado
-    strictPort: true,    // falla si el puerto está ocupado (útil para no andar adivinando)
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
     cors: true,
-    // Si el HMR no conecta desde otro dispositivo:
-    // hmr: { host: 'TU_IP_LOCAL', protocol: 'ws', port: 5173 },
-    // allowedHosts: ['TU_IP_LOCAL', 'localhost'],
   },
   preview: {
     host: '0.0.0.0',
     port: 5173,
   },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['vue', 'vue-router'],
+          'bootstrap': ['bootstrap'],
+          'utils': ['axios', 'leaflet', 'qrcode']
+        }
+      }
+    }
+  }
 })
