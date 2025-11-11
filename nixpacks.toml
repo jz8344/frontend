@@ -2,10 +2,18 @@
 nixPkgs = ['nodejs_20']
 
 [phases.install]
-cmds = ['npm install']
+cmds = [
+  'npm install --verbose'
+]
 
 [phases.build]
-cmds = ['npm run build']
+cmds = [
+  'npm run build --verbose',
+  'ls -la dist || dir dist'
+]
 
 [start]
-cmd = 'npm run start'
+cmd = 'node server.js'
+
+[variables]
+NODE_ENV = 'production'
