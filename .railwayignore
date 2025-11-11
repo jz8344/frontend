@@ -1,0 +1,2 @@
+# Railway ignore - evitar detección automática como SPA estática
+# NO ignorar en build, solo para detección

@@ -38,3 +38,4 @@ server.on('error', (error) => {
   console.error('❌ Error al iniciar servidor:', error);
   process.exit(1);
 });
+
