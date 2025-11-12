@@ -1,6 +1,5 @@
 // Configuraciones de las aplicaciones dinámicas del admin dashboard
 import { estadosMexico, municipiosPorEstado, coloniasPorMunicipio } from './estadosMunicipios.js'
-import { getEstados, getMunicipiosByEstado, getInfoByCP } from './geoService.js'
 
 export const appConfigs = {
   usuarios: {
@@ -511,17 +510,6 @@ export const appConfigs = {
         colClass: 'col-md-12'
       },
       {
-        key: 'codigo_postal',
-        label: 'Código Postal',
-        type: 'text',
-        required: false,
-        placeholder: '00000',
-        icon: 'bi bi-mailbox',
-        colClass: 'col-md-4',
-        maxlength: 5,
-        autoFillAddress: true // Flag para auto-llenar dirección
-      },
-      {
         key: 'estado_republica',
         label: 'Estado',
         type: 'select',
@@ -529,15 +517,7 @@ export const appConfigs = {
         placeholder: 'Seleccionar estado',
         icon: 'bi bi-map',
         colClass: 'col-md-4',
-        options: [], // Se cargará desde la API
-        getOptions: async () => {
-          try {
-            return await getEstados()
-          } catch (error) {
-            console.error('Error loading estados:', error)
-            return estadosMexico // Fallback a datos locales
-          }
-        }
+        options: estadosMexico
       },
       {
         key: 'municipio',
@@ -548,17 +528,11 @@ export const appConfigs = {
         icon: 'bi bi-geo',
         colClass: 'col-md-4',
         dependsOn: 'estado_republica',
-        options: [], // Se cargará dinámicamente desde la API
-        getOptions: async (formData) => {
+        options: [],
+        getOptions: (formData) => {
           if (!formData.estado_republica) return []
-          try {
-            return await getMunicipiosByEstado(formData.estado_republica)
-          } catch (error) {
-            console.error('Error loading municipios:', error)
-            // Fallback a datos locales
-            const municipios = municipiosPorEstado[formData.estado_republica] || []
-            return municipios.map(m => ({ value: m, label: m }))
-          }
+          const municipios = municipiosPorEstado[formData.estado_republica] || []
+          return municipios.map(m => ({ value: m, label: m }))
         }
       },
       {
@@ -566,26 +540,26 @@ export const appConfigs = {
         label: 'Colonia',
         type: 'datalist',
         required: false,
-        placeholder: 'Escriba el código postal para cargar colonias',
+        placeholder: 'Seleccione municipio para ver colonias disponibles',
         icon: 'bi bi-houses',
-        colClass: 'col-md-12',
-        dependsOn: 'codigo_postal',
-        options: [], // Se cargará desde la API basado en CP
-        getOptions: async (formData) => {
-          if (!formData.codigo_postal || formData.codigo_postal.length !== 5) {
-            return []
-          }
-          try {
-            const info = await getInfoByCP(formData.codigo_postal)
-            if (info && info.colonias && info.colonias.length > 0) {
-              return info.colonias.map(c => ({ value: c, label: c }))
-            }
-            return []
-          } catch (error) {
-            console.error('Error loading colonias:', error)
-            return []
-          }
+        colClass: 'col-md-4',
+        dependsOn: 'municipio',
+        options: [],
+        getOptions: (formData) => {
+          if (!formData.municipio) return []
+          const colonias = coloniasPorMunicipio[formData.municipio] || []
+          return colonias.map(c => ({ value: c, label: c }))
         }
+      },
+      {
+        key: 'codigo_postal',
+        label: 'Código Postal',
+        type: 'text',
+        required: false,
+        placeholder: '00000',
+        icon: 'bi bi-mailbox',
+        colClass: 'col-md-4',
+        maxlength: 5
       },
       {
         key: 'telefono',

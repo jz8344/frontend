@@ -314,9 +314,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed, onMounted } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { API_BASE_URL } from '@/config/api'
-import { getInfoByCP } from '@/admin_frontend/config/geoService.js'
 
 const props = defineProps({
   config: {
@@ -382,7 +381,7 @@ const hasPasswordFields = computed(() => {
 })
 
 // Inicializar formulario
-async function initializeForm() {
+function initializeForm() {
   // Limpiar errores
   Object.keys(errors).forEach(key => delete errors[key])
   error.value = ''
@@ -404,27 +403,22 @@ async function initializeForm() {
   })
   
   // Cargar opciones para campos select y datalist
-  for (const field of props.config.fields) {
+  props.config.fields.forEach(field => {
     if ((field.type === 'select' || field.type === 'datalist') && !field.dependsOn) {
-      await loadFieldOptions(field)
+      loadFieldOptions(field)
     }
-  }
+  })
 }
 
-// Función para cargar opciones (sincrónicas o asíncronas)
-async function loadFieldOptions(field) {
+// Función para cargar opciones de campos
+function loadFieldOptions(field) {
   const fieldKey = field.key
-  
-  // Si ya está cargando, no hacer nada
-  if (loadingOptions[fieldKey]) return
+  let options = []
   
   try {
-    loadingOptions[fieldKey] = true
-    let options = []
-    
-    // Si el campo tiene una función getOptions, usarla (puede ser async)
+    // Si el campo tiene una función getOptions, usarla
     if (field.getOptions && typeof field.getOptions === 'function') {
-      options = await field.getOptions(form)
+      options = field.getOptions(form)
     } else if (field.options) {
       options = field.options
     } else if (field.relatedKey && props.relatedData[field.relatedKey]) {
@@ -441,17 +435,15 @@ async function loadFieldOptions(field) {
   } catch (err) {
     console.error(`Error loading options for ${fieldKey}:`, err)
     fieldOptions[fieldKey] = []
-  } finally {
-    loadingOptions[fieldKey] = false
   }
 }
 
-// Función para recargar opciones de un campo dependiente
-async function reloadDependentFields(changedFieldKey) {
+// Función para recargar opciones de campos dependientes
+function reloadDependentFields(changedFieldKey) {
   const dependentFields = props.config.fields.filter(f => f.dependsOn === changedFieldKey)
   
   for (const field of dependentFields) {
-    await loadFieldOptions(field)
+    loadFieldOptions(field)
   }
 }
 
@@ -690,61 +682,26 @@ function getFileName(filePath) {
 watch(() => props.item, initializeForm, { immediate: true })
 watch(() => props.isEditing, initializeForm)
 
-// Watcher para campos dependientes (ej: municipio depende de estado)
-watch(() => form.estado_republica, async (newEstado, oldEstado) => {
-  // Si cambió el estado, limpiar el municipio y colonia
+// Watcher para estado_republica - recargar municipios y limpiar campos dependientes
+watch(() => form.estado_republica, (newEstado, oldEstado) => {
   if (newEstado !== oldEstado) {
+    // Limpiar campos dependientes
     if (form.municipio) form.municipio = ''
     if (form.colonia) form.colonia = ''
     
-    // Recargar opciones de campos dependientes
-    await reloadDependentFields('estado_republica')
+    // Recargar opciones de municipios
+    reloadDependentFields('estado_republica')
   }
 })
 
-// Watcher para código postal - auto-llenar dirección
-watch(() => form.codigo_postal, async (newCP, oldCP) => {
-  // Solo procesar si cambió y tiene 5 dígitos
-  if (newCP && newCP.length === 5 && newCP !== oldCP) {
-    const cpField = props.config.fields.find(f => f.key === 'codigo_postal')
-    
-    // Verificar si el campo tiene la flag autoFillAddress
-    if (cpField && cpField.autoFillAddress) {
-      try {
-        loadingOptions['codigo_postal'] = true
-        const info = await getInfoByCP(newCP)
-        
-        if (info) {
-          // Auto-llenar estado, municipio y ciudad
-          if (info.estado && form.estado_republica !== info.estado) {
-            form.estado_republica = info.estado
-          }
-          if (info.municipio && form.municipio !== info.municipio) {
-            form.municipio = info.municipio
-          }
-          if (info.ciudad && form.ciudad !== info.ciudad) {
-            form.ciudad = info.ciudad
-          }
-          
-          // Cargar colonias
-          if (info.colonias && info.colonias.length > 0) {
-            await reloadDependentFields('codigo_postal')
-          }
-        }
-      } catch (err) {
-        console.error('Error auto-filling address:', err)
-      } finally {
-        loadingOptions['codigo_postal'] = false
-      }
-    }
-  }
-})
-
-// Watcher para municipio - recargar colonias si depende de municipio
-watch(() => form.municipio, async (newMunicipio, oldMunicipio) => {
+// Watcher para municipio - recargar colonias
+watch(() => form.municipio, (newMunicipio, oldMunicipio) => {
   if (newMunicipio !== oldMunicipio) {
+    // Limpiar colonia
     if (form.colonia) form.colonia = ''
-    await reloadDependentFields('municipio')
+    
+    // Recargar opciones de colonias
+    reloadDependentFields('municipio')
   }
 })
 
