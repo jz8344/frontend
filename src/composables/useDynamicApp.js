@@ -20,7 +20,7 @@ export function useDynamicApp(appName) {
   }
   
   // Computed
-  const apiEndpoint = computed(() => `/admin/${appName}`)
+  const apiEndpoint = computed(() => config.apiEndpoint || `/admin/${appName}`)
   
   // Métodos principales
   async function loadItems() {

@@ -233,7 +233,7 @@ const cards = [
   {
     key: 'bd',
     title: 'Base de datos',
-    description: 'Respaldos y gestión de MongoDB',
+    description: 'Respaldos y gestión de PostgreSQL',
     icon: 'bi-database-fill',
     color: 'primary',
     img: 'https://raw.githubusercontent.com/odoo/odoo/18.0/addons/sale/static/description/icon.png',

@@ -57,7 +57,7 @@
               <tr v-for="item in sortedItems" :key="item.id">
                 <td><code class="text-primary">{{ item.nombre }}</code></td>
                 <td><span :class="`badge ${getTipoBadgeClass(item.tipo)}`">{{ item.tipo }}</span></td>
-                <td><span class="badge bg-dark">{{ item.formato.toUpperCase() }}</span></td>
+                <td><span class="badge bg-dark">{{ item.formato ? item.formato.toUpperCase() : 'SQL' }}</span></td>
                 <td>{{ item.tamano_formateado }}</td>
                 <td><i class="bi bi-person me-1"></i>{{ item.created_by || 'Sistema' }}</td>
                 <td><small>{{ formatDate(item.created_at) }}</small></td>
