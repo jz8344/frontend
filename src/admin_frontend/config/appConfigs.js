@@ -716,42 +716,138 @@ export const appConfigs = {
   respaldos: {
     name: 'Respaldos',
     singular: 'Respaldo',
-    description: 'Gestiona los respaldos de la base de datos MongoDB',
+    description: 'Gestiona los respaldos de la base de datos PostgreSQL',
     icon: 'bi bi-shield-check',
-    searchFields: ['filename'],
+    searchFields: ['nombre', 'descripcion'],
     sortFields: [
-      { key: 'filename', label: 'Archivo' },
-      { key: 'created_at', label: 'Fecha de Creación' },
-      { key: 'size_bytes', label: 'Tamaño' }
+      { key: 'nombre', label: 'Nombre' },
+      { key: 'tipo', label: 'Tipo' },
+      { key: 'formato', label: 'Formato' },
+      { key: 'tamano', label: 'Tamaño' },
+      { key: 'created_at', label: 'Fecha' }
     ],
     displayFields: [
       { 
-        key: 'filename', 
+        key: 'nombre', 
         label: 'Archivo',
         type: 'code',
         icon: 'bi bi-file-earmark-zip',
         sortable: true
       },
-      { key: 'size', label: 'Tamaño', type: 'badge', icon: 'bi bi-hdd', sortable: true },
       { 
-        key: 'created_at', 
-        label: 'Fecha de Creación',
-        type: 'date',
-        icon: 'bi bi-calendar',
+        key: 'tipo', 
+        label: 'Tipo',
+        type: 'badge',
+        icon: 'bi bi-tag',
+        sortable: true,
+        getValue: (item) => {
+          const badges = {
+            'completo': { text: 'Completo', class: 'bg-primary' },
+            'tablas': { text: 'Tablas', class: 'bg-info' },
+            'estructura': { text: 'Estructura', class: 'bg-secondary' }
+          }
+          return badges[item.tipo] || { text: item.tipo, class: 'bg-secondary' }
+        }
+      },
+      { 
+        key: 'formato', 
+        label: 'Formato',
+        type: 'badge',
+        icon: 'bi bi-file-earmark',
+        sortable: true,
+        getValue: (item) => {
+          return { text: item.formato.toUpperCase(), class: 'bg-dark' }
+        }
+      },
+      { 
+        key: 'tamano_formateado', 
+        label: 'Tamaño',
+        icon: 'bi bi-hdd',
         sortable: true
       },
       { 
-        key: 'created_human', 
-        label: 'Antigüedad',
-        icon: 'bi bi-clock',
+        key: 'created_by', 
+        label: 'Creado Por',
+        icon: 'bi bi-person',
         sortable: false
       },
+      { 
+        key: 'created_at', 
+        label: 'Fecha',
+        type: 'datetime',
+        icon: 'bi bi-calendar',
+        sortable: true
+      }
+    ],
+    fields: [
       {
-        key: 'actions',
-        label: 'Acciones',
-        type: 'custom',
-        sortable: false,
-        customComponent: 'BackupActions'
+        key: 'tipo',
+        label: 'Tipo de Backup',
+        type: 'select',
+        required: true,
+        placeholder: 'Seleccionar tipo',
+        icon: 'bi bi-database',
+        colClass: 'col-md-12',
+        options: [
+          { value: 'completo', label: 'Completo - Toda la base de datos' },
+          { value: 'tablas', label: 'Por Tablas - Selección específica' },
+          { value: 'estructura', label: 'Solo Estructura - Sin datos' }
+        ]
+      },
+      {
+        key: 'tablas',
+        label: 'Seleccionar Tablas',
+        type: 'multiselect',
+        required: false,
+        placeholder: 'Seleccionar tablas...',
+        icon: 'bi bi-table',
+        colClass: 'col-md-12',
+        dependsOn: 'tipo',
+        visibleWhen: (formData) => formData.tipo === 'tablas',
+        options: [],
+        getOptions: async () => {
+          try {
+            const response = await fetch(`${window.location.origin}/api/admin/backups/tables`, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
+                'Accept': 'application/json'
+              }
+            })
+            if (response.ok) {
+              const tables = await response.json()
+              return tables.map(t => ({ value: t, label: t }))
+            }
+          } catch (error) {
+            console.error('Error loading tables:', error)
+          }
+          return []
+        }
+      },
+      {
+        key: 'formato',
+        label: 'Formato de Compresión',
+        type: 'select',
+        required: true,
+        placeholder: 'Seleccionar formato',
+        icon: 'bi bi-file-zip',
+        colClass: 'col-md-12',
+        defaultValue: 'sql',
+        options: [
+          { value: 'sql', label: 'SQL - Sin comprimir' },
+          { value: 'gz', label: 'GZ - Compresión Gzip' },
+          { value: 'zip', label: 'ZIP - Compresión ZIP' }
+        ]
+      },
+      {
+        key: 'descripcion',
+        label: 'Descripción (Opcional)',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Ej: Backup antes de actualización...',
+        icon: 'bi bi-card-text',
+        colClass: 'col-md-12',
+        rows: 3,
+        maxlength: 500
       }
     ],
     // API endpoint personalizado para respaldos
@@ -762,37 +858,33 @@ export const appConfigs = {
     canEdit: false,
     canDelete: true,
     canView: false,
+    hasDownload: true,
+    hasRestore: true,
     customActions: [
       {
-        name: 'create_backup',
-        label: 'Crear Respaldo',
-        icon: 'bi bi-plus-circle',
+        name: 'download',
+        label: 'Descargar',
+        icon: 'bi bi-download',
         type: 'primary',
-        handler: 'createBackup'
+        itemAction: true
       },
       {
-        name: 'cleanup_old',
+        name: 'restore',
+        label: 'Restaurar',
+        icon: 'bi bi-arrow-counterclockwise',
+        type: 'success',
+        itemAction: true,
+        requiresConfirmation: true,
+        confirmationMessage: '¿Está seguro de restaurar este backup? Esta acción reemplazará todos los datos actuales.'
+      },
+      {
+        name: 'cleanup',
         label: 'Limpiar Antiguos',
         icon: 'bi bi-trash',
         type: 'warning',
-        handler: 'cleanupOld'
-      },
-      {
-        name: 'schedule_backup',
-        label: 'Programar Respaldos',
-        icon: 'bi bi-clock',
-        type: 'info',
-        handler: 'scheduleBackup'
+        globalAction: true
       }
-    ],
-    // Configuración de programación de respaldos
-    scheduleConfig: {
-      enabled: false,
-      frequency: 'daily',
-      time: '02:00',
-      retention_days: 30,
-      cleanup_enabled: true
-    }
+    ]
   }
 }
 

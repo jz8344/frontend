@@ -102,6 +102,46 @@
                   </div>
                 </div>
                 
+                <!-- Multiselect Input -->
+                <div v-else-if="field.type === 'multiselect'">
+                  <div class="multiselect-wrapper border rounded p-2" :class="{ 'is-invalid': errors[field.key] }">
+                    <div v-if="loadingOptions[field.key]" class="text-center py-2">
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                      Cargando opciones...
+                    </div>
+                    <div v-else class="multiselect-options" style="max-height: 200px; overflow-y: auto;">
+                      <div 
+                        v-for="option in fieldOptions[field.key] || []"
+                        :key="option.value"
+                        class="form-check"
+                      >
+                        <input
+                          :id="`${field.key}_${option.value}`"
+                          v-model="form[field.key]"
+                          type="checkbox"
+                          class="form-check-input"
+                          :value="option.value"
+                        />
+                        <label 
+                          :for="`${field.key}_${option.value}`"
+                          class="form-check-label user-select-none"
+                          style="cursor: pointer;"
+                        >
+                          {{ option.label }}
+                        </label>
+                      </div>
+                    </div>
+                    <div v-if="!loadingOptions[field.key] && (!fieldOptions[field.key] || fieldOptions[field.key].length === 0)" class="text-muted text-center py-2">
+                      <i class="bi bi-inbox me-1"></i>
+                      No hay opciones disponibles
+                    </div>
+                  </div>
+                  <small v-if="form[field.key]?.length" class="form-text text-muted">
+                    <i class="bi bi-check-circle me-1"></i>
+                    {{ form[field.key].length }} seleccionada(s)
+                  </small>
+                </div>
+                
                 <!-- Datalist Input (autocomplete) -->
                 <div v-else-if="field.type === 'datalist'">
                   <input
@@ -462,10 +502,20 @@ function initializeForm() {
   props.config.fields.forEach(field => {
     if (props.isEditing && props.item) {
       // Modo edición: cargar valores existentes
-      form[field.key] = getNestedValue(props.item, field.key) || field.default || field.defaultValue || ''
+      const value = getNestedValue(props.item, field.key)
+      // Para multiselect, asegurar que sea array
+      if (field.type === 'multiselect') {
+        form[field.key] = Array.isArray(value) ? value : (value ? JSON.parse(value) : [])
+      } else {
+        form[field.key] = value || field.default || field.defaultValue || ''
+      }
     } else {
       // Modo creación: valores por defecto
-      form[field.key] = field.defaultValue || field.default || ''
+      if (field.type === 'multiselect') {
+        form[field.key] = []
+      } else {
+        form[field.key] = field.defaultValue || field.default || ''
+      }
     }
     
     // Inicializar estado de contraseñas
@@ -474,23 +524,26 @@ function initializeForm() {
     }
   })
   
-  // Cargar opciones para campos select y datalist
+  // Cargar opciones para campos select, datalist y multiselect
   props.config.fields.forEach(field => {
-    if ((field.type === 'select' || field.type === 'datalist') && !field.dependsOn) {
+    if ((field.type === 'select' || field.type === 'datalist' || field.type === 'multiselect') && !field.dependsOn) {
       loadFieldOptions(field)
     }
   })
 }
 
 // Función para cargar opciones de campos
-function loadFieldOptions(field) {
+async function loadFieldOptions(field) {
   const fieldKey = field.key
+  loadingOptions[fieldKey] = true
   let options = []
   
   try {
-    // Si el campo tiene una función getOptions, usarla
+    // Si el campo tiene una función getOptions, usarla (puede ser async)
     if (field.getOptions && typeof field.getOptions === 'function') {
-      options = field.getOptions(form)
+      const result = field.getOptions(form)
+      // Verificar si es una promesa
+      options = result instanceof Promise ? await result : result
     } else if (field.options) {
       options = field.options
     } else if (field.relatedKey && props.relatedData[field.relatedKey]) {
@@ -507,6 +560,8 @@ function loadFieldOptions(field) {
   } catch (err) {
     console.error(`Error loading options for ${fieldKey}:`, err)
     fieldOptions[fieldKey] = []
+  } finally {
+    loadingOptions[fieldKey] = false
   }
 }
 

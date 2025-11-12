@@ -1,73 +1,78 @@
 <template>
   <div class="backup-app">
-    <!-- Header simplificado -->
-    <div class="app-header d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h1 class="h3 mb-0">
+        <h1 class="h3 mb-1 d-flex align-items-center">
           <i class="bi bi-shield-check me-2 text-primary"></i>
-          Gestión de Respaldos
+          Gestión de Respaldos PostgreSQL
         </h1>
-        <p class="text-muted mb-0">Agrega el primer respaldo haciendo clic en el botón "Crear Respaldo"</p>
+        <p class="text-muted mb-0">Administra los respaldos de la base de datos</p>
       </div>
-      <div>
-        <button 
-          class="btn btn-success"
-          @click="createBackup"
-          :disabled="isCreatingBackup"
-        >
-          <i class="bi bi-plus-circle me-2"></i>
-          {{ isCreatingBackup ? 'Creando...' : 'Crear Respaldo' }}
+      <div class="d-flex gap-2">
+        <button class="btn btn-warning" @click="showCleanupModal">
+          <i class="bi bi-trash me-2"></i>Limpiar Antiguos
+        </button>
+        <button class="btn btn-success" @click="openCreateModal" :disabled="creating">
+          <i class="bi bi-plus-circle me-2"></i>{{ creating ? 'Creando...' : 'Crear Respaldo' }}
         </button>
       </div>
     </div>
 
-    <!-- Mensaje si no hay respaldos -->
-    <div v-if="backups.length === 0" class="text-center py-4">
-      <i class="bi bi-archive fa-3x text-muted mb-3"></i>
-      <h5 class="text-muted">No hay respaldos para mostrar</h5>
-      <p class="text-muted">Agrega el primer respaldo haciendo clic en el botón "Crear Respaldo"</p>
-    </div>
-
-    <!-- Tabla de respaldos si existen -->
-    <div v-else class="card">
-      <div class="card-header">
-        <h5 class="card-title mb-0">
-          <i class="bi bi-list me-2"></i>
-          Lista de Respaldos
-        </h5>
-      </div>
+    <div class="card">
       <div class="card-body">
-        <div v-if="isLoading" class="text-center py-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-          <p class="mt-2 text-muted">Cargando respaldos...</p>
+        <div v-if="loading" class="text-center py-5">
+          <div class="spinner-border text-primary mb-3"></div>
+          <p class="text-muted">Cargando respaldos...</p>
         </div>
-        <div v-else-if="backups.length === 0" class="text-center py-4">
-          <i class="bi bi-archive fa-3x text-muted mb-3"></i>
-          <h5 class="text-muted">No hay respaldos para mostrar</h5>
-          <p class="text-muted">Agrega el primer respaldo haciendo clic en el botón "Crear Respaldo"</p>
+
+        <div v-else-if="items.length === 0" class="text-center py-5">
+          <i class="bi bi-archive display-1 text-muted mb-3"></i>
+          <h5 class="text-muted">No hay respaldos disponibles</h5>
+          <p class="text-muted">Crea tu primer respaldo usando el botón superior</p>
         </div>
+
         <div v-else class="table-responsive">
           <table class="table table-hover">
             <thead>
               <tr>
-                <th>Archivo</th>
-                <th>Fecha</th>
+                <th @click="handleSort('nombre')" style="cursor: pointer;">
+                  <i class="bi bi-file-earmark-zip me-1"></i>Archivo
+                  <i v-if="sortField === 'nombre'" :class="`bi bi-arrow-${sortDirection === 'asc' ? 'up' : 'down'}`"></i>
+                </th>
+                <th @click="handleSort('tipo')" style="cursor: pointer;">
+                  <i class="bi bi-tag me-1"></i>Tipo
+                  <i v-if="sortField === 'tipo'" :class="`bi bi-arrow-${sortDirection === 'asc' ? 'up' : 'down'}`"></i>
+                </th>
+                <th>Formato</th>
+                <th>Tamaño</th>
+                <th>Creado Por</th>
+                <th @click="handleSort('created_at')" style="cursor: pointer;">
+                  <i class="bi bi-calendar me-1"></i>Fecha
+                  <i v-if="sortField === 'created_at'" :class="`bi bi-arrow-${sortDirection === 'asc' ? 'up' : 'down'}`"></i>
+                </th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="backup in backups" :key="backup.filename">
-                <td>{{ backup.filename }}</td>
-                <td>{{ backup.created_human }}</td>
+              <tr v-for="item in sortedItems" :key="item.id">
+                <td><code class="text-primary">{{ item.nombre }}</code></td>
+                <td><span :class="`badge ${getTipoBadgeClass(item.tipo)}`">{{ item.tipo }}</span></td>
+                <td><span class="badge bg-dark">{{ item.formato.toUpperCase() }}</span></td>
+                <td>{{ item.tamano_formateado }}</td>
+                <td><i class="bi bi-person me-1"></i>{{ item.created_by || 'Sistema' }}</td>
+                <td><small>{{ formatDate(item.created_at) }}</small></td>
                 <td>
-                  <button class="btn btn-outline-primary btn-sm me-2" @click="downloadBackup(backup.filename)">
-                    <i class="bi bi-download"></i> Descargar
-                  </button>
-                  <button class="btn btn-outline-danger btn-sm" @click="deleteBackup(backup.filename)">
-                    <i class="bi bi-trash"></i> Eliminar
-                  </button>
+                  <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" @click="handleDownload(item)" title="Descargar">
+                      <i class="bi bi-download"></i>
+                    </button>
+                    <button class="btn btn-outline-success" @click="handleRestore(item)" title="Restaurar">
+                      <i class="bi bi-arrow-counterclockwise"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" @click="handleDelete(item.id)" title="Eliminar">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -76,414 +81,221 @@
       </div>
     </div>
 
-    <!-- Modal para crear respaldo -->
-    <div class="modal fade" id="createBackupModal" tabindex="-1">
-      <div class="modal-dialog">
+    <DynamicFormModal
+      v-if="showFormModal"
+      :config="config"
+      :is-editing="false"
+      :item="null"
+      @close="closeCreateModal"
+      @save="handleCreate"
+    />
+
+    <div v-if="showCleanup" class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Crear Nuevo Respaldo</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Limpiar Respaldos Antiguos</h5>
+            <button type="button" class="btn-close" @click="showCleanup = false"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="executeBackup">
-              <div class="mb-3">
-                <p>¿Deseas crear un nuevo respaldo de la base de datos?</p>
+            <div class="mb-3">
+              <label class="form-label">Eliminar respaldos con más de:</label>
+              <div class="input-group">
+                <input v-model.number="cleanupDays" type="number" class="form-control" min="1" max="365" placeholder="30" />
+                <span class="input-group-text">días</span>
               </div>
-            </form>
+              <small class="form-text text-muted">Se eliminarán todos los respaldos más antiguos que esta cantidad de días</small>
+            </div>
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle me-2"></i>Esta acción no se puede deshacer
+            </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-              Cancelar
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-primary"
-              @click="executeBackup"
-              :disabled="isExecutingBackup"
-            >
-              <i class="bi bi-database me-2"></i>
-              {{ isExecutingBackup ? 'Creando...' : 'Crear Respaldo' }}
+            <button type="button" class="btn btn-secondary" @click="showCleanup = false">Cancelar</button>
+            <button type="button" class="btn btn-warning" @click="handleCleanup" :disabled="creating">
+              <i class="bi bi-trash me-2"></i>{{ creating ? 'Limpiando...' : 'Limpiar' }}
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal para limpieza -->
-    <div class="modal fade" id="cleanupModal" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Limpiar Respaldos Antiguos</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <form @submit.prevent="executeCleanup">
-              <div class="mb-3">
-                <label for="cleanupDays" class="form-label">Eliminar respaldos más antiguos que:</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
-                  id="cleanupDays"
-                  v-model.number="cleanupDays"
-                  min="1" 
-                  max="365"
-                  required
-                >
-                <div class="form-text">
-                  Se eliminarán todos los respaldos que tengan más de este número de días.
-                </div>
-              </div>
-              <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                Esta acción no se puede deshacer. Los respaldos eliminados no se podrán recuperar.
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-              Cancelar
-            </button>
-            <button 
-              type="button" 
-              class="btn btn-danger"
-              @click="executeCleanup"
-              :disabled="isCleaning"
-            >
-              <i class="bi bi-trash"></i>
-              {{ isCleaning ? 'Limpiando...' : 'Eliminar Respaldos' }}
-            </button>
-          </div>
-        </div>
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+      <div v-for="(alert, index) in alerts" :key="index" :class="`alert alert-${alert.type} alert-dismissible fade show`">
+        <i :class="getAlertIcon(alert.type)" class="me-2"></i>{{ alert.message }}
+        <button type="button" class="btn-close" @click="dismissAlert(index)"></button>
       </div>
     </div>
-
-
-
-
-
-
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useToast } from '../../composables/useToast'
-import api from '../../config/api'
-import DynamicListView from '../components/DynamicListView.vue'
-import BackupActions from '../components/BackupActions.vue'
-import { getAppConfig } from '../config/appConfigs'
+import DynamicFormModal from '../components/DynamicFormModal.vue'
+import { appConfigs } from '../config/appConfigs.js'
+import axios from 'axios'
 
-export default {
-  name: 'BackupApp',
-  components: {
-    DynamicListView,
-    BackupActions
-  },
-  setup() {
-    const { showToast, toasts, removeToast } = useToast()
-    
-    // State
-    const backups = ref([])
-    const storageInfo = ref({
-      total_backups: 0,
-      total_size: '0 B',
-      total_size_bytes: 0
-    })
-    const mongoStatus = ref('Verificando...')
-    const isLoading = ref(false)
-    const isCreatingBackup = ref(false)
-    const isExecutingBackup = ref(false)
-    const isCleaning = ref(false)
-    const lastOutput = ref('')
-    
-    // Configuración
-    const backupConfig = ref(getAppConfig('respaldos'))
-    const backupOptions = ref({
-      cleanup: false,
-      retention_days: 7
-    })
-    const cleanupDays = ref(30)
-    const scheduleConfig = ref({
-      enabled: false,
-      frequency: 'daily',
-      time: '02:00',
-      retention_days: 30,
-      cleanup_enabled: true
-    })
-    
-    // Computed
-    const latestBackupAge = computed(() => {
-      if (backups.value.length === 0) return 'N/A'
-      return backups.value[0].created_human
-    })
-    
-    // Methods
-    const loadBackups = async () => {
-      try {
-        isLoading.value = true
-        const response = await api.get('/admin/backups')
-        
-        if (response.data.success) {
-          backups.value = response.data.backups
-          storageInfo.value = response.data.storage_info
-        }
-      } catch (error) {
-        console.error('Error loading backups:', error)
-        showToast('Error al cargar respaldos', 'error')
-      } finally {
-        isLoading.value = false
-      }
+const config = appConfigs.respaldos
+const items = ref([])
+const loading = ref(false)
+const creating = ref(false)
+const showFormModal = ref(false)
+const showCleanup = ref(false)
+const cleanupDays = ref(30)
+const sortField = ref('created_at')
+const sortDirection = ref('desc')
+const alerts = ref([])
+
+const sortedItems = computed(() => {
+  const sorted = [...items.value]
+  sorted.sort((a, b) => {
+    let aVal = a[sortField.value]
+    let bVal = b[sortField.value]
+    if (sortField.value === 'created_at') {
+      aVal = new Date(aVal).getTime()
+      bVal = new Date(bVal).getTime()
     }
-    
-    const checkMongoStatus = async () => {
-      try {
-        const response = await api.get('/admin/backups/status')
-        mongoStatus.value = response.data.mongo_status === 'connected' ? 'Conectado' : 'Error'
-      } catch (error) {
-        mongoStatus.value = 'Error'
-      }
-    }
-    
-    const createBackup = () => {
-      // Mostrar modal usando el método más compatible
-      const modalElement = document.getElementById('createBackupModal')
-      if (modalElement) {
-        // Intentar usar Bootstrap si está disponible
-        if (typeof bootstrap !== 'undefined') {
-          const modal = new bootstrap.Modal(modalElement)
-          modal.show()
-        } else {
-          // Fallback para mostrar modal manualmente
-          modalElement.style.display = 'block'
-          modalElement.classList.add('show')
-          document.body.classList.add('modal-open')
-        }
-      }
-    }
-    
-    const executeBackup = async () => {
-      try {
-        isExecutingBackup.value = true
-        
-        const response = await api.post('/admin/backups', backupOptions.value)
-        
-        if (response.data.success) {
-          showToast('Respaldo creado exitosamente', 'success')
-          lastOutput.value = response.data.output
-          
-          // Cerrar modal
-          const modalElement = document.getElementById('createBackupModal')
-          if (modalElement) {
-            if (typeof bootstrap !== 'undefined') {
-              const modal = bootstrap.Modal.getInstance(modalElement)
-              if (modal) modal.hide()
-            } else {
-              modalElement.style.display = 'none'
-              modalElement.classList.remove('show')
-              document.body.classList.remove('modal-open')
-            }
-          }
-          
-          // Actualizar datos
-          await loadBackups()
-        } else {
-          showToast(response.data.message || 'Error al crear respaldo', 'error')
-          lastOutput.value = response.data.output || ''
-        }
-      } catch (error) {
-        console.error('Error creating backup:', error)
-        showToast('Error al crear respaldo', 'error')
-      } finally {
-        isExecutingBackup.value = false
-      }
-    }
-    
-    const showCleanupModal = () => {
-      const modalElement = document.getElementById('cleanupModal')
-      if (modalElement) {
-        if (typeof bootstrap !== 'undefined') {
-          const modal = new bootstrap.Modal(modalElement)
-          modal.show()
-        } else {
-          modalElement.style.display = 'block'
-          modalElement.classList.add('show')
-          document.body.classList.add('modal-open')
-        }
-      }
-    }
-    
-    const executeCleanup = async () => {
-      try {
-        isCleaning.value = true
-        
-        const response = await api.post('/admin/backups/cleanup', {
-          days: cleanupDays.value
-        })
-        
-        if (response.data.success) {
-          showToast(response.data.message, 'success')
-          lastOutput.value = response.data.output
-          
-          // Cerrar modal
-          const modalElement = document.getElementById('cleanupModal')
-          if (modalElement) {
-            if (typeof bootstrap !== 'undefined') {
-              const modal = bootstrap.Modal.getInstance(modalElement)
-              if (modal) modal.hide()
-            } else {
-              modalElement.style.display = 'none'
-              modalElement.classList.remove('show')
-              document.body.classList.remove('modal-open')
-            }
-          }
-          
-          // Actualizar datos
-          await loadBackups()
-        } else {
-          showToast(response.data.message || 'Error en limpieza', 'error')
-        }
-      } catch (error) {
-        console.error('Error cleaning up:', error)
-        showToast('Error en limpieza de respaldos', 'error')
-      } finally {
-        isCleaning.value = false
-      }
-    }
-    
-    const showScheduleModal = () => {
-      const modalElement = document.getElementById('scheduleModal')
-      if (modalElement) {
-        if (typeof bootstrap !== 'undefined') {
-          const modal = new bootstrap.Modal(modalElement)
-          modal.show()
-        } else {
-          modalElement.style.display = 'block'
-          modalElement.classList.add('show')
-          document.body.classList.add('modal-open')
-        }
-      }
-    }
-    
-    const saveSchedule = () => {
-      // Guardar configuración de programación (implementar según necesidades)
-      showToast('Configuración guardada (función pendiente de implementar)', 'info')
-      const modalElement = document.getElementById('scheduleModal')
-      if (modalElement) {
-        if (typeof bootstrap !== 'undefined') {
-          const modal = bootstrap.Modal.getInstance(modalElement)
-          if (modal) modal.hide()
-        } else {
-          modalElement.style.display = 'none'
-          modalElement.classList.remove('show')
-          document.body.classList.remove('modal-open')
-        }
-      }
-    }
-    
-    const handleCustomAction = (action, item) => {
-      switch (action) {
-        case 'create_backup':
-          createBackup()
-          break
-        case 'cleanup_old':
-          showCleanupModal()
-          break
-        case 'schedule_backup':
-          showScheduleModal()
-          break
-      }
-    }
-    
-    // Toast helper functions
-    const getToastClass = (type) => {
-      const classes = {
-        'success': 'success',
-        'error': 'danger',
-        'warning': 'warning',
-        'info': 'info'
-      }
-      return classes[type] || 'info'
-    }
-    
-    const getToastIcon = (type) => {
-      const icons = {
-        'success': 'bi bi-check-circle-fill',
-        'error': 'bi bi-exclamation-triangle-fill',
-        'warning': 'bi bi-exclamation-triangle-fill',
-        'info': 'bi bi-info-circle-fill'
-      }
-      return icons[type] || 'bi bi-info-circle-fill'
-    }
-    
-    // Lifecycle
-    onMounted(() => {
-      Promise.all([
-        loadBackups(),
-        checkMongoStatus()
-      ])
-    })
-    
-    return {
-      // State
-      backups,
-      storageInfo,
-      mongoStatus,
-      isLoading,
-      isCreatingBackup,
-      isExecutingBackup,
-      isCleaning,
-      lastOutput,
-      backupConfig,
-      backupOptions,
-      cleanupDays,
-      scheduleConfig,
-      
-      // Computed
-      latestBackupAge,
-      
-      // Methods
-      loadBackups,
-      createBackup,
-      executeBackup,
-      showCleanupModal,
-      executeCleanup,
-      showScheduleModal,
-      saveSchedule,
-      handleCustomAction,
-      
-      // Toast
-      toasts,
-      removeToast,
-      getToastClass,
-      getToastIcon
-    }
+    return sortDirection.value === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1)
+  })
+  return sorted
+})
+
+async function loadBackups() {
+  loading.value = true
+  try {
+    const response = await axios.get('/api/admin/backups')
+    items.value = response.data.backups || response.data || []
+  } catch (error) {
+    showAlert('Error al cargar respaldos', 'danger')
+  } finally {
+    loading.value = false
   }
 }
+
+function openCreateModal() {
+  showFormModal.value = true
+}
+
+function closeCreateModal() {
+  showFormModal.value = false
+}
+
+async function handleCreate(formData) {
+  creating.value = true
+  try {
+    const response = await axios.post('/api/admin/backups', formData)
+    showAlert(response.data.message || 'Respaldo creado exitosamente', 'success')
+    closeCreateModal()
+    await loadBackups()
+  } catch (error) {
+    showAlert(error.response?.data?.message || 'Error al crear respaldo', 'danger')
+  } finally {
+    creating.value = false
+  }
+}
+
+async function handleDownload(item) {
+  try {
+    const response = await axios.get(`/api/admin/backups/${item.id}/download`, { responseType: 'blob' })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', item.nombre)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    showAlert('Descarga iniciada', 'success')
+  } catch (error) {
+    showAlert('Error al descargar respaldo', 'danger')
+  }
+}
+
+async function handleRestore(item) {
+  if (!confirm('¿Está seguro de restaurar este backup? Esta acción reemplazará todos los datos actuales.')) return
+  creating.value = true
+  try {
+    const response = await axios.post(`/api/admin/backups/${item.id}/restore`)
+    showAlert(response.data.message || 'Respaldo restaurado exitosamente', 'success')
+    await loadBackups()
+  } catch (error) {
+    showAlert(error.response?.data?.message || 'Error al restaurar respaldo', 'danger')
+  } finally {
+    creating.value = false
+  }
+}
+
+async function handleDelete(id) {
+  if (!confirm('¿Está seguro de eliminar este respaldo?')) return
+  try {
+    await axios.delete(`/api/admin/backups/${id}`)
+    showAlert('Respaldo eliminado exitosamente', 'success')
+    await loadBackups()
+  } catch (error) {
+    showAlert('Error al eliminar respaldo', 'danger')
+  }
+}
+
+function showCleanupModal() {
+  cleanupDays.value = 30
+  showCleanup.value = true
+}
+
+async function handleCleanup() {
+  if (!confirm(`¿Eliminar respaldos con más de ${cleanupDays.value} días?`)) return
+  creating.value = true
+  try {
+    const response = await axios.post('/api/admin/backups/cleanup', { days: cleanupDays.value })
+    showAlert(response.data.message || 'Limpieza completada', 'success')
+    showCleanup.value = false
+    await loadBackups()
+  } catch (error) {
+    showAlert('Error al limpiar respaldos', 'danger')
+  } finally {
+    creating.value = false
+  }
+}
+
+function handleSort(field) {
+  if (sortField.value === field) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortDirection.value = 'asc'
+  }
+}
+
+function getTipoBadgeClass(tipo) {
+  return { 'completo': 'bg-primary', 'tablas': 'bg-info', 'estructura': 'bg-secondary' }[tipo] || 'bg-secondary'
+}
+
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleString('es-MX', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function showAlert(message, type = 'info') {
+  alerts.value.push({ message, type })
+  setTimeout(() => alerts.value.shift(), 5000)
+}
+
+function dismissAlert(index) {
+  alerts.value.splice(index, 1)
+}
+
+function getAlertIcon(type) {
+  return { success: 'bi bi-check-circle-fill', danger: 'bi bi-exclamation-triangle-fill', warning: 'bi bi-exclamation-circle-fill', info: 'bi bi-info-circle-fill' }[type] || 'bi bi-info-circle-fill'
+}
+
+onMounted(() => loadBackups())
 </script>
 
 <style scoped>
-.backup-app {
-  padding: 20px;
-}
-
-.card {
-  border: none;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
-
-.card-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
-}
-
-pre {
-  font-size: 0.875rem;
-  line-height: 1.4;
-}
-
-.app-header {
-  border-bottom: 1px solid #dee2e6;
-  padding-bottom: 1rem;
-}
+.backup-app { padding: 1.5rem; }
+.card { border: none; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); }
+.table thead th { border-top: none; font-weight: 600; text-transform: uppercase; font-size: 0.875rem; color: #6c757d; }
+.table tbody tr:hover { background-color: rgba(0,123,255,0.05); }
+code.text-primary { background-color: rgba(13,110,253,0.1); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; }
+[data-bs-theme="dark"] .table thead th { color: #adb5bd; }
+[data-bs-theme="dark"] .table tbody tr:hover { background-color: rgba(255,255,255,0.05); }
+[data-bs-theme="dark"] code.text-primary { background-color: rgba(13,110,253,0.2); }
 </style>
