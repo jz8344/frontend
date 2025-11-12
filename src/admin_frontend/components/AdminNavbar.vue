@@ -266,8 +266,8 @@ const apps = [
   { name: 'Usuarios', icon: 'bi-people-fill', key: 'usuarios' },
   { name: 'Hijos', icon: 'bi-person-heart', key: 'hijos' },
   { name: 'Choferes', icon: 'bi-person-vcard', key: 'choferes' },
+  { name: 'Escuelas', icon: 'bi-building', key: 'escuelas' },
   { name: 'Unidades', icon: 'bi-bus-front-fill', key: 'unidades' },
-  { name: 'Rutas', icon: 'bi-geo-alt-fill', key: 'rutas' },
   { name: 'Estadísticas', icon: 'bi-bar-chart-fill', key: 'estadisticas' },
   { name: 'Configuración', icon: 'bi-gear-fill', key: 'ajustes' },
 ]
@@ -279,7 +279,7 @@ const routeMap = {
   'usuarios': '/admin/app/usuarios',
   'hijos': '/admin/app/hijos',
   'choferes': '/admin/app/choferes',
-  'rutas': '/admin/app/rutas',
+  'escuelas': '/admin/escuelas',
   'unidades': '/admin/app/unidades',
   'estadisticas': '/admin/estadisticas',
   'ajustes': '/admin/configuracion',

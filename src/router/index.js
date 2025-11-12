@@ -96,9 +96,9 @@ const routes = [
      meta: { middleware: [adminAuth] }
    },
    {
-     path: '/admin/rutas',
-     name: 'AdminRutas',
-     component: () => import('@/admin_frontend/AdminRutas.vue'),
+     path: '/admin/escuelas',
+     name: 'AdminEscuelas',
+     component: () => import('@/admin_frontend/AdminEscuelas.vue'),
      meta: { middleware: [adminAuth] }
    },
    {

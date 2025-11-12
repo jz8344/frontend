@@ -387,119 +387,240 @@ export const appConfigs = {
     ]
   },
 
-  rutas: {
-    name: 'Rutas',
-    singular: 'Ruta',
-    description: 'Administra las rutas de transporte',
-    icon: 'bi bi-geo-alt',
-    searchFields: ['nombre', 'chofer.nombre', 'unidad.matricula'],
+  escuelas: {
+    name: 'Escuelas',
+    singular: 'Escuela',
+    description: 'Administra las escuelas a las que TrailynSafe da servicio',
+    icon: 'bi bi-building',
+    searchFields: ['nombre', 'direccion', 'telefono', 'contacto'],
     sortFields: [
       { key: 'nombre', label: 'Nombre' },
+      { key: 'nivel', label: 'Nivel Educativo' },
       { key: 'estado', label: 'Estado' },
-      { key: 'horario', label: 'Horario' }
+      { key: 'fecha_inicio_servicio', label: 'Fecha de Inicio' }
     ],
     displayFields: [
-      { key: 'nombre', label: 'Nombre', icon: 'bi bi-signpost', sortable: true },
       { 
-        key: 'chofer.nombre', 
-        label: 'Chofer',
+        key: 'nombre', 
+        label: 'Nombre',
         type: 'avatar',
-        icon: 'bi bi-person-badge',
-        getValue: (item) => item.chofer ? `${item.chofer.nombre} ${item.chofer.apellidos}` : '-',
+        icon: 'bi bi-building',
         sortable: true
       },
       { 
-        key: 'unidad.matricula', 
-        label: 'Unidad',
-        type: 'code',
-        icon: 'bi bi-bus-front',
+        key: 'nivel', 
+        label: 'Nivel Educativo',
+        icon: 'bi bi-book',
         sortable: true
       },
-      { key: 'horario', label: 'Horario', icon: 'bi bi-clock', sortable: true },
-      { key: 'estado', label: 'Estado', type: 'badge', sortable: true }
+      { 
+        key: 'direccion', 
+        label: 'Dirección',
+        icon: 'bi bi-geo-alt',
+        sortable: false
+      },
+      { 
+        key: 'telefono', 
+        label: 'Teléfono',
+        icon: 'bi bi-telephone',
+        sortable: false
+      },
+      { 
+        key: 'contacto', 
+        label: 'Contacto',
+        icon: 'bi bi-person-lines-fill',
+        sortable: true
+      },
+      { 
+        key: 'estado', 
+        label: 'Estado',
+        type: 'badge',
+        sortable: true
+      }
     ],
     fields: [
       {
         key: 'nombre',
-        label: 'Nombre de la Ruta',
+        label: 'Nombre de la Escuela',
         type: 'text',
         required: true,
-        placeholder: 'Nombre descriptivo de la ruta',
-        icon: 'bi bi-signpost',
-        colClass: 'col-md-6'
+        placeholder: 'Nombre completo de la institución',
+        icon: 'bi bi-building',
+        colClass: 'col-md-8'
       },
       {
-        key: 'chofer_id',
-        label: 'Chofer',
-        type: 'select',
-        required: true,
-        placeholder: 'Seleccionar chofer',
-        icon: 'bi bi-person-badge',
-        colClass: 'col-md-6',
-        relatedKey: 'choferes',
-        relatedLabel: 'nombre'
-      },
-      {
-        key: 'unidad_id',
-        label: 'Unidad',
-        type: 'select',
-        required: true,
-        placeholder: 'Seleccionar unidad',
-        icon: 'bi bi-bus-front',
-        colClass: 'col-md-4',
-        relatedKey: 'unidades',
-        relatedLabel: 'matricula'
-      },
-      {
-        key: 'horario',
-        label: 'Horario',
+        key: 'clave',
+        label: 'Clave (CCT/Código)',
         type: 'text',
         required: false,
-        placeholder: 'Ej: 7:00 AM - 8:00 AM',
-        icon: 'bi bi-clock',
+        placeholder: 'Clave de Centro de Trabajo',
+        icon: 'bi bi-tag',
         colClass: 'col-md-4'
       },
       {
-        key: 'inicio',
-        label: 'Punto de Inicio',
-        type: 'text',
-        required: false,
-        placeholder: 'Dirección de inicio',
-        icon: 'bi bi-geo-alt',
-        colClass: 'col-md-6'
-      },
-      {
-        key: 'fin',
-        label: 'Punto Final',
-        type: 'text',
-        required: false,
-        placeholder: 'Dirección de destino',
-        icon: 'bi bi-geo-alt-fill',
-        colClass: 'col-md-6'
-      },
-      {
-        key: 'rango',
-        label: 'Rango (km)',
-        type: 'number',
+        key: 'nivel',
+        label: 'Nivel Educativo',
+        type: 'select',
         required: true,
-        placeholder: 'Distancia en kilómetros',
-        icon: 'bi bi-rulers',
+        placeholder: 'Seleccionar nivel',
+        icon: 'bi bi-book',
         colClass: 'col-md-6',
-        min: 0,
-        max: 1000
+        options: [
+          { value: 'preescolar', label: 'Preescolar' },
+          { value: 'primaria', label: 'Primaria' },
+          { value: 'secundaria', label: 'Secundaria' },
+          { value: 'preparatoria', label: 'Preparatoria' },
+          { value: 'universidad', label: 'Universidad' },
+          { value: 'mixto', label: 'Mixto' }
+        ]
+      },
+      {
+        key: 'turno',
+        label: 'Turno',
+        type: 'select',
+        required: false,
+        placeholder: 'Seleccionar turno',
+        icon: 'bi bi-clock',
+        colClass: 'col-md-6',
+        options: [
+          { value: 'matutino', label: 'Matutino' },
+          { value: 'vespertino', label: 'Vespertino' },
+          { value: 'mixto', label: 'Mixto' },
+          { value: 'tiempo_completo', label: 'Tiempo Completo' }
+        ]
+      },
+      {
+        key: 'direccion',
+        label: 'Dirección',
+        type: 'textarea',
+        required: true,
+        placeholder: 'Dirección completa de la escuela',
+        icon: 'bi bi-geo-alt',
+        colClass: 'col-md-12'
+      },
+      {
+        key: 'colonia',
+        label: 'Colonia',
+        type: 'text',
+        required: false,
+        placeholder: 'Colonia o fraccionamiento',
+        icon: 'bi bi-signpost',
+        colClass: 'col-md-4'
+      },
+      {
+        key: 'ciudad',
+        label: 'Ciudad',
+        type: 'text',
+        required: false,
+        placeholder: 'Ciudad',
+        icon: 'bi bi-building',
+        colClass: 'col-md-4'
+      },
+      {
+        key: 'codigo_postal',
+        label: 'Código Postal',
+        type: 'text',
+        required: false,
+        placeholder: '00000',
+        icon: 'bi bi-mailbox',
+        colClass: 'col-md-4',
+        maxlength: 5
+      },
+      {
+        key: 'telefono',
+        label: 'Teléfono Principal',
+        type: 'tel',
+        required: false,
+        placeholder: '+52 123 456 7890',
+        icon: 'bi bi-telephone',
+        colClass: 'col-md-6'
+      },
+      {
+        key: 'correo',
+        label: 'Correo Electrónico',
+        type: 'email',
+        required: false,
+        placeholder: 'contacto@escuela.edu.mx',
+        icon: 'bi bi-envelope',
+        colClass: 'col-md-6'
+      },
+      {
+        key: 'contacto',
+        label: 'Nombre del Contacto',
+        type: 'text',
+        required: false,
+        placeholder: 'Director(a) o persona de contacto',
+        icon: 'bi bi-person-lines-fill',
+        colClass: 'col-md-6'
+      },
+      {
+        key: 'cargo_contacto',
+        label: 'Cargo del Contacto',
+        type: 'text',
+        required: false,
+        placeholder: 'Director(a), Subdirector(a), Coordinador(a)',
+        icon: 'bi bi-person-badge',
+        colClass: 'col-md-6'
+      },
+      {
+        key: 'horario_entrada',
+        label: 'Horario de Entrada',
+        type: 'time',
+        required: false,
+        placeholder: '07:00',
+        icon: 'bi bi-clock',
+        colClass: 'col-md-6'
+      },
+      {
+        key: 'horario_salida',
+        label: 'Horario de Salida',
+        type: 'time',
+        required: false,
+        placeholder: '14:00',
+        icon: 'bi bi-clock-fill',
+        colClass: 'col-md-6'
+      },
+      {
+        key: 'fecha_inicio_servicio',
+        label: 'Fecha de Inicio de Servicio',
+        type: 'date',
+        required: false,
+        placeholder: 'Fecha en que se inició el servicio',
+        icon: 'bi bi-calendar-check',
+        colClass: 'col-md-6'
+      },
+      {
+        key: 'numero_alumnos',
+        label: 'Número de Alumnos',
+        type: 'number',
+        required: false,
+        placeholder: 'Alumnos que usan el servicio',
+        icon: 'bi bi-people',
+        colClass: 'col-md-6',
+        min: 0
+      },
+      {
+        key: 'notas',
+        label: 'Notas/Observaciones',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Información adicional relevante',
+        icon: 'bi bi-card-text',
+        colClass: 'col-md-12'
       },
       {
         key: 'estado',
-        label: 'Estado',
+        label: 'Estado del Servicio',
         type: 'select',
         required: true,
-        placeholder: 'Estado de la ruta',
+        placeholder: 'Estado del servicio',
         icon: 'bi bi-flag',
-        colClass: 'col-md-6',
+        colClass: 'col-md-12',
+        defaultValue: 'activo',
         options: [
-          { value: 'activa', label: 'Activa' },
-          { value: 'inactiva', label: 'Inactiva' },
-          { value: 'completada', label: 'Completada' }
+          { value: 'activo', label: 'Activo' },
+          { value: 'inactivo', label: 'Inactivo' },
+          { value: 'suspendido', label: 'Suspendido' }
         ]
       }
     ]
