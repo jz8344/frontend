@@ -567,11 +567,17 @@ watch(() => viewMode.value, () => {
 
 <style scoped>
 .dynamic-list-view {
-  background: #ffffff;
+  background: var(--bs-body-bg, #ffffff);
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   padding: 24px;
   margin-bottom: 24px;
+}
+
+/* Dark mode para dynamic list view */
+[data-bs-theme="dark"] .dynamic-list-view {
+  background: #1f2937;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .view-controls {
@@ -613,6 +619,8 @@ watch(() => viewMode.value, () => {
   border-radius: 12px;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--bs-body-bg, #ffffff);
+  color: var(--bs-body-color, #212529);
 }
 
 .item-card:hover {
@@ -624,6 +632,31 @@ watch(() => viewMode.value, () => {
   border-width: 2px !important;
   box-shadow: 0 4px 16px rgba(13, 110, 253, 0.25);
   transform: translateY(-2px);
+}
+
+/* Dark mode para cards */
+[data-bs-theme="dark"] .item-card {
+  background: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .item-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme="dark"] .item-card .card-body {
+  background: transparent;
+  color: #e5e7eb;
+}
+
+[data-bs-theme="dark"] .item-card .card-title {
+  color: #f3f4f6;
+}
+
+[data-bs-theme="dark"] .card-actions {
+  border-top-color: #4b5563;
 }
 
 /* Avatar con iniciales para grid */
@@ -661,10 +694,13 @@ watch(() => viewMode.value, () => {
   overflow: hidden;
   border: 1px solid #e9ecef;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background: var(--bs-body-bg, #ffffff);
 }
 
 .table {
   margin-bottom: 0;
+  background: var(--bs-body-bg, #ffffff);
+  color: var(--bs-body-color, #212529);
 }
 
 .table thead th {
@@ -680,15 +716,60 @@ watch(() => viewMode.value, () => {
   padding: 14px 12px;
   vertical-align: middle;
   border-bottom: 1px solid #f1f3f4;
+  background: transparent;
+  color: inherit;
 }
 
 .table tbody tr {
   transition: all 0.2s ease;
+  background: transparent;
 }
 
 .table tbody tr:hover {
   background-color: #f8f9fa;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Dark mode para tablas */
+[data-bs-theme="dark"] .table-container {
+  background: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+[data-bs-theme="dark"] .table {
+  background: #1f2937;
+  color: #e5e7eb;
+  --bs-table-bg: #1f2937;
+  --bs-table-color: #e5e7eb;
+  --bs-table-border-color: #374151;
+  --bs-table-striped-bg: rgba(255, 255, 255, 0.03);
+  --bs-table-hover-bg: #374151;
+}
+
+[data-bs-theme="dark"] .table thead th {
+  background-color: #374151;
+  border-bottom-color: #4b5563;
+  color: #f3f4f6;
+}
+
+[data-bs-theme="dark"] .table tbody td {
+  border-bottom-color: #374151;
+  color: #e5e7eb;
+}
+
+[data-bs-theme="dark"] .table tbody tr {
+  background: transparent;
+}
+
+[data-bs-theme="dark"] .table tbody tr:hover {
+  background-color: #374151;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .table tbody tr.table-active {
+  background-color: #4b5563;
+  --bs-table-bg: #4b5563;
 }
 
 .sortable-header {
@@ -717,6 +798,20 @@ watch(() => viewMode.value, () => {
   bottom: 0;
   background: linear-gradient(45deg, rgba(33, 150, 243, 0.1), rgba(33, 150, 243, 0.05));
   pointer-events: none;
+}
+
+/* Dark mode para headers ordenables */
+[data-bs-theme="dark"] .sortable-header:hover {
+  background-color: #4b5563 !important;
+}
+
+[data-bs-theme="dark"] .sorted-column {
+  background-color: #1e3a5f !important;
+  box-shadow: inset 0 0 0 2px #3b82f6;
+}
+
+[data-bs-theme="dark"] .sorted-column::after {
+  background: linear-gradient(45deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
 }
 
 .selection-column {
@@ -783,6 +878,8 @@ watch(() => viewMode.value, () => {
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   border: 1px solid #e9ecef;
+  background: var(--bs-body-bg, #ffffff);
+  color: var(--bs-body-color, #212529);
 }
 
 .dropdown-item-text {
@@ -792,11 +889,46 @@ watch(() => viewMode.value, () => {
 .form-check-label {
   cursor: pointer;
   font-size: 0.875rem;
+  color: var(--bs-body-color, #212529);
 }
 
 .form-check-input:checked {
   background-color: #007bff;
   border-color: #007bff;
+}
+
+/* Dark mode para dropdowns */
+[data-bs-theme="dark"] .dropdown-menu {
+  background: #374151;
+  border-color: #4b5563;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme="dark"] .dropdown-item {
+  color: #e5e7eb;
+}
+
+[data-bs-theme="dark"] .dropdown-item:hover,
+[data-bs-theme="dark"] .dropdown-item:focus {
+  background-color: #4b5563;
+  color: #f3f4f6;
+}
+
+[data-bs-theme="dark"] .dropdown-header {
+  color: #9ca3af;
+}
+
+[data-bs-theme="dark"] .dropdown-divider {
+  border-top-color: #4b5563;
+}
+
+[data-bs-theme="dark"] .dropdown-item.active-sort {
+  background-color: #1e3a5f;
+  color: #60a5fa;
+}
+
+[data-bs-theme="dark"] .form-check-label {
+  color: #e5e7eb;
 }
 
 /* Responsive */

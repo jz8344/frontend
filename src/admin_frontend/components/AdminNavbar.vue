@@ -289,7 +289,9 @@ const routeMap = {
 function toggleDark() {
   darkMode.value = !darkMode.value
   localStorage.setItem('darkMode', String(darkMode.value))
-  document.body.setAttribute('data-bs-theme', darkMode.value ? 'dark' : 'light')
+  const theme = darkMode.value ? 'dark' : 'light'
+  document.documentElement.setAttribute('data-bs-theme', theme)
+  document.body.setAttribute('data-bs-theme', theme)
 }
 
 function toggleSidebar() {
@@ -340,7 +342,9 @@ async function logout() {
 onMounted(() => {
   const stored = localStorage.getItem('darkMode') === 'true'
   darkMode.value = stored
-  document.body.setAttribute('data-bs-theme', stored ? 'dark' : 'light')
+  const theme = stored ? 'dark' : 'light'
+  document.documentElement.setAttribute('data-bs-theme', theme)
+  document.body.setAttribute('data-bs-theme', theme)
 
   // Bootstrap tooltips and dropdowns initialization con delay
   setTimeout(() => {
