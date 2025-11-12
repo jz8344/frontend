@@ -1,4 +1,7 @@
 // Configuraciones de las aplicaciones dinámicas del admin dashboard
+import { estadosMexico, municipiosPorEstado, coloniasPorMunicipio } from './estadosMunicipios.js'
+import { getEstados, getMunicipiosByEstado, getInfoByCP } from './geoService.js'
+
 export const appConfigs = {
   usuarios: {
     name: 'Usuarios',
@@ -499,22 +502,13 @@ export const appConfigs = {
         colClass: 'col-md-12'
       },
       {
-        key: 'colonia',
-        label: 'Colonia',
-        type: 'text',
-        required: false,
-        placeholder: 'Colonia o fraccionamiento',
-        icon: 'bi bi-signpost',
-        colClass: 'col-md-4'
-      },
-      {
         key: 'ciudad',
         label: 'Ciudad',
         type: 'text',
         required: false,
         placeholder: 'Ciudad',
         icon: 'bi bi-building',
-        colClass: 'col-md-4'
+        colClass: 'col-md-12'
       },
       {
         key: 'codigo_postal',
@@ -524,7 +518,74 @@ export const appConfigs = {
         placeholder: '00000',
         icon: 'bi bi-mailbox',
         colClass: 'col-md-4',
-        maxlength: 5
+        maxlength: 5,
+        autoFillAddress: true // Flag para auto-llenar dirección
+      },
+      {
+        key: 'estado_republica',
+        label: 'Estado',
+        type: 'select',
+        required: false,
+        placeholder: 'Seleccionar estado',
+        icon: 'bi bi-map',
+        colClass: 'col-md-4',
+        options: [], // Se cargará desde la API
+        getOptions: async () => {
+          try {
+            return await getEstados()
+          } catch (error) {
+            console.error('Error loading estados:', error)
+            return estadosMexico // Fallback a datos locales
+          }
+        }
+      },
+      {
+        key: 'municipio',
+        label: 'Municipio',
+        type: 'select',
+        required: false,
+        placeholder: 'Primero seleccione un estado',
+        icon: 'bi bi-geo',
+        colClass: 'col-md-4',
+        dependsOn: 'estado_republica',
+        options: [], // Se cargará dinámicamente desde la API
+        getOptions: async (formData) => {
+          if (!formData.estado_republica) return []
+          try {
+            return await getMunicipiosByEstado(formData.estado_republica)
+          } catch (error) {
+            console.error('Error loading municipios:', error)
+            // Fallback a datos locales
+            const municipios = municipiosPorEstado[formData.estado_republica] || []
+            return municipios.map(m => ({ value: m, label: m }))
+          }
+        }
+      },
+      {
+        key: 'colonia',
+        label: 'Colonia',
+        type: 'datalist',
+        required: false,
+        placeholder: 'Escriba el código postal para cargar colonias',
+        icon: 'bi bi-houses',
+        colClass: 'col-md-12',
+        dependsOn: 'codigo_postal',
+        options: [], // Se cargará desde la API basado en CP
+        getOptions: async (formData) => {
+          if (!formData.codigo_postal || formData.codigo_postal.length !== 5) {
+            return []
+          }
+          try {
+            const info = await getInfoByCP(formData.codigo_postal)
+            if (info && info.colonias && info.colonias.length > 0) {
+              return info.colonias.map(c => ({ value: c, label: c }))
+            }
+            return []
+          } catch (error) {
+            console.error('Error loading colonias:', error)
+            return []
+          }
+        }
       },
       {
         key: 'telefono',

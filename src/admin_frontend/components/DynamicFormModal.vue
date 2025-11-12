@@ -73,22 +73,57 @@
                 </div>
                 
                 <!-- Select Input -->
-                <select
-                  v-else-if="field.type === 'select'"
-                  v-model="form[field.key]"
-                  class="form-select"
-                  :class="{ 'is-invalid': errors[field.key] }"
-                  :required="field.required"
-                >
-                  <option value="" disabled>{{ field.placeholder }}</option>
-                  <option 
-                    v-for="option in getSelectOptions(field)" 
-                    :key="option.value" 
-                    :value="option.value"
+                <div v-if="field.type === 'select'">
+                  <select
+                    v-model="form[field.key]"
+                    class="form-select"
+                    :class="{ 'is-invalid': errors[field.key] }"
+                    :required="field.required"
+                    :disabled="loadingOptions[field.key]"
                   >
-                    {{ option.label }}
-                  </option>
-                </select>
+                    <option value="" disabled>
+                      {{ loadingOptions[field.key] ? 'Cargando...' : field.placeholder }}
+                    </option>
+                    <option 
+                      v-for="option in fieldOptions[field.key] || []" 
+                      :key="option.value" 
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </select>
+                  <div v-if="loadingOptions[field.key]" class="form-text">
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Cargando opciones...
+                  </div>
+                </div>
+                
+                <!-- Datalist Input (autocomplete) -->
+                <div v-else-if="field.type === 'datalist'">
+                  <input
+                    v-model="form[field.key]"
+                    type="text"
+                    class="form-control"
+                    :class="{ 'is-invalid': errors[field.key] }"
+                    :placeholder="field.placeholder"
+                    :required="field.required"
+                    :list="`${field.key}-list`"
+                    :disabled="loadingOptions[field.key]"
+                  />
+                  <datalist :id="`${field.key}-list`">
+                    <option 
+                      v-for="option in fieldOptions[field.key] || []" 
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      {{ option.label }}
+                    </option>
+                  </datalist>
+                  <div v-if="loadingOptions[field.key]" class="form-text">
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Cargando opciones...
+                  </div>
+                </div>
                 
                 <!-- Textarea -->
                 <textarea
@@ -279,8 +314,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch, computed, onMounted } from 'vue'
 import { API_BASE_URL } from '@/config/api'
+import { getInfoByCP } from '@/admin_frontend/config/geoService.js'
 
 const props = defineProps({
   config: {
@@ -314,6 +350,10 @@ const error = ref('')
 const filePreview = reactive({})
 const selectedFiles = reactive({})
 
+// Estado para opciones dinámicas
+const fieldOptions = reactive({})
+const loadingOptions = reactive({})
+
 // Estado para modal de contraseña
 const showPasswordModal = ref(false)
 const passwordForm = reactive({
@@ -342,7 +382,7 @@ const hasPasswordFields = computed(() => {
 })
 
 // Inicializar formulario
-function initializeForm() {
+async function initializeForm() {
   // Limpiar errores
   Object.keys(errors).forEach(key => delete errors[key])
   error.value = ''
@@ -362,25 +402,57 @@ function initializeForm() {
       showPassword[field.key] = false
     }
   })
+  
+  // Cargar opciones para campos select y datalist
+  for (const field of props.config.fields) {
+    if ((field.type === 'select' || field.type === 'datalist') && !field.dependsOn) {
+      await loadFieldOptions(field)
+    }
+  }
 }
 
-// Computed
-function getSelectOptions(field) {
-  if (field.options) {
-    return field.options
-  }
+// Función para cargar opciones (sincrónicas o asíncronas)
+async function loadFieldOptions(field) {
+  const fieldKey = field.key
   
-  // Obtener opciones de datos relacionados
-  if (field.relatedKey && props.relatedData[field.relatedKey]) {
-    return props.relatedData[field.relatedKey].map(item => ({
-      value: item.id,
-      label: field.relatedLabel ? 
-        field.relatedLabel.split('.').reduce((obj, key) => obj?.[key], item) :
-        `${item.nombre || item.name || ''} ${item.apellidos || item.lastname || ''}`.trim()
-    }))
-  }
+  // Si ya está cargando, no hacer nada
+  if (loadingOptions[fieldKey]) return
   
-  return []
+  try {
+    loadingOptions[fieldKey] = true
+    let options = []
+    
+    // Si el campo tiene una función getOptions, usarla (puede ser async)
+    if (field.getOptions && typeof field.getOptions === 'function') {
+      options = await field.getOptions(form)
+    } else if (field.options) {
+      options = field.options
+    } else if (field.relatedKey && props.relatedData[field.relatedKey]) {
+      // Obtener opciones de datos relacionados
+      options = props.relatedData[field.relatedKey].map(item => ({
+        value: item.id,
+        label: field.relatedLabel ? 
+          field.relatedLabel.split('.').reduce((obj, key) => obj?.[key], item) :
+          `${item.nombre || item.name || ''} ${item.apellidos || item.lastname || ''}`.trim()
+      }))
+    }
+    
+    fieldOptions[fieldKey] = options
+  } catch (err) {
+    console.error(`Error loading options for ${fieldKey}:`, err)
+    fieldOptions[fieldKey] = []
+  } finally {
+    loadingOptions[fieldKey] = false
+  }
+}
+
+// Función para recargar opciones de un campo dependiente
+async function reloadDependentFields(changedFieldKey) {
+  const dependentFields = props.config.fields.filter(f => f.dependsOn === changedFieldKey)
+  
+  for (const field of dependentFields) {
+    await loadFieldOptions(field)
+  }
 }
 
 // Métodos
@@ -617,6 +689,64 @@ function getFileName(filePath) {
 // Watchers
 watch(() => props.item, initializeForm, { immediate: true })
 watch(() => props.isEditing, initializeForm)
+
+// Watcher para campos dependientes (ej: municipio depende de estado)
+watch(() => form.estado_republica, async (newEstado, oldEstado) => {
+  // Si cambió el estado, limpiar el municipio y colonia
+  if (newEstado !== oldEstado) {
+    if (form.municipio) form.municipio = ''
+    if (form.colonia) form.colonia = ''
+    
+    // Recargar opciones de campos dependientes
+    await reloadDependentFields('estado_republica')
+  }
+})
+
+// Watcher para código postal - auto-llenar dirección
+watch(() => form.codigo_postal, async (newCP, oldCP) => {
+  // Solo procesar si cambió y tiene 5 dígitos
+  if (newCP && newCP.length === 5 && newCP !== oldCP) {
+    const cpField = props.config.fields.find(f => f.key === 'codigo_postal')
+    
+    // Verificar si el campo tiene la flag autoFillAddress
+    if (cpField && cpField.autoFillAddress) {
+      try {
+        loadingOptions['codigo_postal'] = true
+        const info = await getInfoByCP(newCP)
+        
+        if (info) {
+          // Auto-llenar estado, municipio y ciudad
+          if (info.estado && form.estado_republica !== info.estado) {
+            form.estado_republica = info.estado
+          }
+          if (info.municipio && form.municipio !== info.municipio) {
+            form.municipio = info.municipio
+          }
+          if (info.ciudad && form.ciudad !== info.ciudad) {
+            form.ciudad = info.ciudad
+          }
+          
+          // Cargar colonias
+          if (info.colonias && info.colonias.length > 0) {
+            await reloadDependentFields('codigo_postal')
+          }
+        }
+      } catch (err) {
+        console.error('Error auto-filling address:', err)
+      } finally {
+        loadingOptions['codigo_postal'] = false
+      }
+    }
+  }
+})
+
+// Watcher para municipio - recargar colonias si depende de municipio
+watch(() => form.municipio, async (newMunicipio, oldMunicipio) => {
+  if (newMunicipio !== oldMunicipio) {
+    if (form.colonia) form.colonia = ''
+    await reloadDependentFields('municipio')
+  }
+})
 
 // Inicializar al montar
 initializeForm()
