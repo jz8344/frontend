@@ -483,7 +483,7 @@ export const appConfigs = {
         placeholder: 'Buscar o crear nueva escuela...',
         icon: 'bi bi-building',
         colClass: 'col-md-8',
-        searchEndpoint: '/api/escuelas/search',
+        searchEndpoint: '/admin/escuelas/search',
         minSearchLength: 3,
         entityType: 'escuela'
       },

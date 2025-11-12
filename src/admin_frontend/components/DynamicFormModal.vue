@@ -772,7 +772,12 @@ async function handleAutocompleteSearch(field, event) {
     try {
       loadingOptions[fieldKey] = true
       
-      const endpoint = field.searchEndpoint || `/api/${field.entityType || 'entity'}/search`
+      // Construir endpoint, asegurando que comience con /api
+      let endpoint = field.searchEndpoint || `/${field.entityType || 'entity'}/search`
+      if (!endpoint.startsWith('/api')) {
+        endpoint = '/api' + endpoint
+      }
+      
       const response = await fetch(`${API_BASE_URL}${endpoint}?q=${encodeURIComponent(query)}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
