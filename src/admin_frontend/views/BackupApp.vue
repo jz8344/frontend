@@ -133,7 +133,7 @@
 import { ref, onMounted, computed } from 'vue'
 import DynamicFormModal from '../components/DynamicFormModal.vue'
 import { appConfigs } from '../config/appConfigs.js'
-import axios from 'axios'
+import http from '@/config/api.js'
 
 const config = appConfigs.respaldos
 const items = ref([])
@@ -163,7 +163,7 @@ const sortedItems = computed(() => {
 async function loadBackups() {
   loading.value = true
   try {
-    const response = await axios.get('/api/admin/backups')
+    const response = await http.get('/admin/backups')
     items.value = response.data.backups || response.data || []
   } catch (error) {
     showAlert('Error al cargar respaldos', 'danger')
@@ -183,7 +183,7 @@ function closeCreateModal() {
 async function handleCreate(formData) {
   creating.value = true
   try {
-    const response = await axios.post('/api/admin/backups', formData)
+    const response = await http.post('/admin/backups', formData)
     showAlert(response.data.message || 'Respaldo creado exitosamente', 'success')
     closeCreateModal()
     await loadBackups()
@@ -196,7 +196,7 @@ async function handleCreate(formData) {
 
 async function handleDownload(item) {
   try {
-    const response = await axios.get(`/api/admin/backups/${item.id}/download`, { responseType: 'blob' })
+    const response = await http.get(`/admin/backups/${item.id}/download`, { responseType: 'blob' })
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
@@ -215,7 +215,7 @@ async function handleRestore(item) {
   if (!confirm('¿Está seguro de restaurar este backup? Esta acción reemplazará todos los datos actuales.')) return
   creating.value = true
   try {
-    const response = await axios.post(`/api/admin/backups/${item.id}/restore`)
+    const response = await http.post(`/admin/backups/${item.id}/restore`)
     showAlert(response.data.message || 'Respaldo restaurado exitosamente', 'success')
     await loadBackups()
   } catch (error) {
@@ -228,7 +228,7 @@ async function handleRestore(item) {
 async function handleDelete(id) {
   if (!confirm('¿Está seguro de eliminar este respaldo?')) return
   try {
-    await axios.delete(`/api/admin/backups/${id}`)
+    await http.delete(`/admin/backups/${id}`)
     showAlert('Respaldo eliminado exitosamente', 'success')
     await loadBackups()
   } catch (error) {
@@ -245,7 +245,7 @@ async function handleCleanup() {
   if (!confirm(`¿Eliminar respaldos con más de ${cleanupDays.value} días?`)) return
   creating.value = true
   try {
-    const response = await axios.post('/api/admin/backups/cleanup', { days: cleanupDays.value })
+    const response = await http.post('/admin/backups/cleanup', { days: cleanupDays.value })
     showAlert(response.data.message || 'Limpieza completada', 'success')
     showCleanup.value = false
     await loadBackups()
