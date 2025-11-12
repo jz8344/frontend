@@ -162,18 +162,23 @@
                       v-model="childrenForms[currentFormIndex].escuela"
                       class="form-select form-select-lg"
                       :class="{ 'is-invalid': formErrors[currentFormIndex]?.escuela }"
+                      :disabled="loadingEscuelas"
                     >
-                      <option value="">Selecciona la escuela</option>
-                      <option value="Escuela Primaria Benito Juárez">Escuela Primaria Benito Juárez</option>
-                      <option value="Instituto Educativo Miguel Hidalgo">Instituto Educativo Miguel Hidalgo</option>
-                      <option value="Colegio José María Morelos">Colegio José María Morelos</option>
-                      <option value="Escuela Primaria Guadalupe Victoria">Escuela Primaria Guadalupe Victoria</option>
-                      <option value="Instituto Tecnológico Regional">Instituto Tecnológico Regional</option>
-                      <option value="Escuela Primaria Emiliano Zapata">Escuela Primaria Emiliano Zapata</option>
+                      <option value="">{{ loadingEscuelas ? 'Cargando escuelas...' : 'Selecciona la escuela' }}</option>
+                      <option 
+                        v-for="escuela in escuelas" 
+                        :key="escuela.id" 
+                        :value="escuela.nombre"
+                      >
+                        {{ escuela.nombre }}
+                      </option>
                     </select>
                     <div v-if="formErrors[currentFormIndex]?.escuela" class="invalid-feedback">
                       {{ formErrors[currentFormIndex].escuela }}
                     </div>
+                    <small v-if="loadingEscuelas" class="text-muted">
+                      <i class="bi bi-hourglass-split me-1"></i>Cargando lista de escuelas...
+                    </small>
                   </div>
 
                   
@@ -329,7 +334,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
 import http from '@/config/api.js'
@@ -345,11 +350,41 @@ const formErrors = ref([])
 const qrPreviews = ref([])
 const requestingPrint = ref(false)
 const printRequestMessage = ref('')
+const escuelas = ref([])
+const loadingEscuelas = ref(false)
 
 // Modales
 let welcomeModal = null
 let celebrationModal = null
 const router = useRouter()
+
+// Cargar escuelas al montar el componente
+onMounted(async () => {
+  await cargarEscuelas()
+})
+
+// Función para cargar escuelas desde el backend
+async function cargarEscuelas() {
+  loadingEscuelas.value = true
+  try {
+    const response = await http.get('/escuelas-activas')
+    escuelas.value = response.data
+    console.debug('[WelcomeModal] Escuelas cargadas:', escuelas.value.length)
+  } catch (error) {
+    console.error('[WelcomeModal] Error cargando escuelas:', error)
+    // Fallback a lista predeterminada si falla
+    escuelas.value = [
+      { id: 1, nombre: 'Escuela Primaria Benito Juárez' },
+      { id: 2, nombre: 'Instituto Educativo Miguel Hidalgo' },
+      { id: 3, nombre: 'Colegio José María Morelos' },
+      { id: 4, nombre: 'Escuela Primaria Guadalupe Victoria' },
+      { id: 5, nombre: 'Instituto Tecnológico Regional' },
+      { id: 6, nombre: 'Escuela Primaria Emiliano Zapata' }
+    ]
+  } finally {
+    loadingEscuelas.value = false
+  }
+}
 
 // Inicializar formularios según la cantidad de hijos
 function initializeForms() {
