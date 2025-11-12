@@ -268,6 +268,7 @@ const apps = [
   { name: 'Choferes', icon: 'bi-person-vcard', key: 'choferes' },
   { name: 'Escuelas', icon: 'bi-building', key: 'escuelas' },
   { name: 'Unidades', icon: 'bi-bus-front-fill', key: 'unidades' },
+  { name: 'Respaldos', icon: 'bi-shield-check', key: 'respaldos' },
   { name: 'Estadísticas', icon: 'bi-bar-chart-fill', key: 'estadisticas' },
   { name: 'Configuración', icon: 'bi-gear-fill', key: 'ajustes' },
 ]
@@ -281,6 +282,7 @@ const routeMap = {
   'choferes': '/admin/app/choferes',
   'escuelas': '/admin/escuelas',
   'unidades': '/admin/app/unidades',
+  'respaldos': '/admin/respaldos',
   'estadisticas': '/admin/estadisticas',
   'ajustes': '/admin/configuracion',
 }
