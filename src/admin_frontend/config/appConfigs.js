@@ -114,36 +114,46 @@ export const appConfigs = {
         label: 'Nombre Completo',
         type: 'text',
         required: true,
-        placeholder: 'Nombre completo del estudiante',
+        placeholder: 'Solo letras',
         icon: 'bi bi-person',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$',
+        validationMessage: 'Solo se permiten letras y espacios'
       },
       {
         key: 'grado',
         label: 'Grado',
         type: 'text',
         required: false,
-        placeholder: 'Ej: 5to, Secundaria',
+        placeholder: 'Alfanumérico (ej: 5to, 1ro Secundaria)',
         icon: 'bi bi-book',
-        colClass: 'col-md-3'
+        colClass: 'col-md-3',
+        pattern: '^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\\s]+$',
+        validationMessage: 'Solo letras, números y espacios'
       },
       {
         key: 'grupo',
         label: 'Grupo',
         type: 'text',
         required: false,
-        placeholder: 'Ej: A, B, C',
+        placeholder: 'Letras o números (ej: A, B, 1)',
         icon: 'bi bi-people',
-        colClass: 'col-md-3'
+        colClass: 'col-md-3',
+        pattern: '^[a-zA-Z0-9]+$',
+        validationMessage: 'Solo letras y números sin espacios',
+        maxlength: 5
       },
       {
         key: 'codigo_qr',
         label: 'Código QR',
         type: 'text',
         required: true,
-        placeholder: 'Código QR único',
+        placeholder: 'Alfanumérico único',
         icon: 'bi bi-qr-code',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        pattern: '^[A-Z0-9-]+$',
+        validationMessage: 'Solo letras mayúsculas, números y guiones',
+        maxlength: 50
       },
       {
         key: 'padre_id',
@@ -191,36 +201,46 @@ export const appConfigs = {
         label: 'Nombre',
         type: 'text',
         required: true,
-        placeholder: 'Nombre del chofer',
+        placeholder: 'Solo letras',
         icon: 'bi bi-person',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$',
+        validationMessage: 'Solo se permiten letras y espacios'
       },
       {
         key: 'apellidos',
         label: 'Apellidos',
         type: 'text',
         required: true,
-        placeholder: 'Apellidos del chofer',
+        placeholder: 'Solo letras',
         icon: 'bi bi-person',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$',
+        validationMessage: 'Solo se permiten letras y espacios'
       },
       {
         key: 'numero_licencia',
         label: 'Número de Licencia',
         type: 'text',
         required: false,
-        placeholder: 'Número de licencia de conducir',
+        placeholder: 'Alfanumérico',
         icon: 'bi bi-card-text',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        pattern: '^[A-Z0-9]+$',
+        validationMessage: 'Solo letras mayúsculas y números',
+        maxlength: 20
       },
       {
         key: 'curp',
         label: 'CURP',
         type: 'text',
         required: false,
-        placeholder: 'CURP (hasta 18 caracteres)',
+        placeholder: '18 caracteres (ej: ABCD123456HDFRLL01)',
         icon: 'bi bi-person-badge',
         colClass: 'col-md-6',
+        pattern: '^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9]{2}$',
+        validationMessage: 'Formato CURP inválido',
+        minlength: 18,
         maxlength: 18
       },
       {
@@ -228,9 +248,13 @@ export const appConfigs = {
         label: 'Teléfono',
         type: 'tel',
         required: false,
-        placeholder: '+52 123 456 7890',
+        placeholder: '10 dígitos',
         icon: 'bi bi-phone',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        pattern: '^[0-9]{10}$',
+        validationMessage: 'Debe contener exactamente 10 dígitos',
+        minlength: 10,
+        maxlength: 10
       },
       {
         key: 'correo',
@@ -289,9 +313,12 @@ export const appConfigs = {
         label: 'Matrícula',
         type: 'text',
         required: true,
-        placeholder: 'Matrícula del vehículo',
+        placeholder: 'Alfanumérico sin espacios',
         icon: 'bi bi-card-text',
-        colClass: 'col-md-4'
+        colClass: 'col-md-4',
+        pattern: '^[A-Z0-9-]+$',
+        validationMessage: 'Solo letras mayúsculas, números y guiones',
+        maxlength: 15
       },
       {
         key: 'descripcion',
@@ -300,25 +327,30 @@ export const appConfigs = {
         required: false,
         placeholder: 'Descripción de la unidad',
         icon: 'bi bi-card-text',
-        colClass: 'col-md-8'
+        colClass: 'col-md-8',
+        maxlength: 500
       },
       {
         key: 'marca',
         label: 'Marca',
         type: 'text',
         required: false,
-        placeholder: 'Marca del vehículo',
+        placeholder: 'Solo letras',
         icon: 'bi bi-truck',
-        colClass: 'col-md-4'
+        colClass: 'col-md-4',
+        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$',
+        validationMessage: 'Solo se permiten letras y espacios'
       },
       {
         key: 'modelo',
         label: 'Modelo',
         type: 'text',
         required: false,
-        placeholder: 'Modelo del vehículo',
+        placeholder: 'Alfanumérico',
         icon: 'bi bi-gear',
-        colClass: 'col-md-4'
+        colClass: 'col-md-4',
+        pattern: '^[a-zA-Z0-9\\s-]+$',
+        validationMessage: 'Solo letras, números, espacios y guiones'
       },
       {
         key: 'anio',
@@ -336,9 +368,11 @@ export const appConfigs = {
         label: 'Color',
         type: 'text',
         required: false,
-        placeholder: 'Color del vehículo',
+        placeholder: 'Solo letras',
         icon: 'bi bi-palette',
-        colClass: 'col-md-4'
+        colClass: 'col-md-4',
+        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$',
+        validationMessage: 'Solo se permiten letras y espacios'
       },
       {
         key: 'capacidad',
@@ -444,20 +478,26 @@ export const appConfigs = {
       {
         key: 'nombre',
         label: 'Nombre de la Escuela',
-        type: 'text',
+        type: 'autocomplete-search',
         required: true,
-        placeholder: 'Nombre completo de la institución',
+        placeholder: 'Buscar o crear nueva escuela...',
         icon: 'bi bi-building',
-        colClass: 'col-md-8'
+        colClass: 'col-md-8',
+        searchEndpoint: '/api/escuelas/search',
+        minSearchLength: 3,
+        entityType: 'escuela'
       },
       {
         key: 'clave',
         label: 'Clave (CCT/Código)',
         type: 'text',
         required: false,
-        placeholder: 'Clave de Centro de Trabajo',
+        placeholder: 'Solo números',
         icon: 'bi bi-tag',
-        colClass: 'col-md-4'
+        colClass: 'col-md-4',
+        pattern: '^[0-9]+$',
+        validationMessage: 'Solo se permiten números',
+        maxlength: 20
       },
       {
         key: 'nivel',
@@ -496,18 +536,23 @@ export const appConfigs = {
         label: 'Dirección',
         type: 'textarea',
         required: true,
-        placeholder: 'Dirección completa de la escuela',
+        placeholder: 'Calle, número, referencias (letras, números y símbolos #/-)',
         icon: 'bi bi-geo-alt',
-        colClass: 'col-md-12'
+        colClass: 'col-md-12',
+        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\\s.,#°/-]+$',
+        validationMessage: 'Solo letras, números y símbolos de dirección (#, /, -, .)'
       },
       {
         key: 'ciudad',
         label: 'Ciudad',
         type: 'text',
         required: false,
-        placeholder: 'Ciudad',
+        placeholder: 'Solo letras',
         icon: 'bi bi-building',
-        colClass: 'col-md-12'
+        colClass: 'col-md-12',
+        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$',
+        validationMessage: 'Solo se permiten letras y espacios',
+        maxlength: 100
       },
       {
         key: 'estado_republica',
@@ -556,9 +601,12 @@ export const appConfigs = {
         label: 'Código Postal',
         type: 'text',
         required: false,
-        placeholder: '00000',
+        placeholder: '5 dígitos',
         icon: 'bi bi-mailbox',
         colClass: 'col-md-4',
+        pattern: '^[0-9]{5}$',
+        validationMessage: 'Debe contener exactamente 5 dígitos',
+        minlength: 5,
         maxlength: 5
       },
       {
@@ -566,9 +614,13 @@ export const appConfigs = {
         label: 'Teléfono Principal',
         type: 'tel',
         required: false,
-        placeholder: '+52 123 456 7890',
+        placeholder: '10 dígitos (ej: 5512345678)',
         icon: 'bi bi-telephone',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        pattern: '^[0-9]{10}$',
+        validationMessage: 'Debe contener exactamente 10 dígitos',
+        minlength: 10,
+        maxlength: 10
       },
       {
         key: 'correo',

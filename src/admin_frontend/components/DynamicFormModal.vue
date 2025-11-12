@@ -38,6 +38,10 @@
                   :class="{ 'is-invalid': errors[field.key] }"
                   :placeholder="field.placeholder"
                   :required="field.required"
+                  :pattern="field.pattern"
+                  :minlength="field.minlength"
+                  :maxlength="field.maxlength"
+                  @input="validateField(field, $event)"
                 />
                 
                 <!-- Number Input -->
@@ -125,6 +129,56 @@
                   </div>
                 </div>
                 
+                <!-- Autocomplete Search (tipo Odoo) -->
+                <div v-else-if="field.type === 'autocomplete-search'" class="autocomplete-search-container">
+                  <div class="position-relative">
+                    <input
+                      v-model="form[field.key]"
+                      type="text"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors[field.key] }"
+                      :placeholder="field.placeholder"
+                      :required="field.required"
+                      @input="handleAutocompleteSearch(field, $event)"
+                      @focus="showAutocompleteResults[field.key] = true"
+                    />
+                    <div 
+                      v-if="loadingOptions[field.key]" 
+                      class="position-absolute top-50 end-0 translate-middle-y pe-3"
+                    >
+                      <span class="spinner-border spinner-border-sm text-primary"></span>
+                    </div>
+                    
+                    <!-- Dropdown de resultados -->
+                    <div 
+                      v-if="showAutocompleteResults[field.key] && autocompleteResults[field.key]?.length > 0"
+                      class="autocomplete-results dropdown-menu show w-100 mt-1"
+                      style="max-height: 300px; overflow-y: auto;"
+                    >
+                      <button
+                        v-for="result in autocompleteResults[field.key]"
+                        :key="result.id"
+                        type="button"
+                        class="dropdown-item d-flex justify-content-between align-items-start"
+                        @click="selectAutocompleteResult(field, result)"
+                      >
+                        <div class="flex-grow-1">
+                          <div class="fw-bold">{{ result.nombre }}</div>
+                          <small class="text-muted">
+                            {{ result.nivel ? `${result.nivel} - ` : '' }}
+                            {{ result.ciudad || result.municipio || '' }}
+                          </small>
+                        </div>
+                        <i class="bi bi-arrow-return-left text-primary"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <small class="form-text text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Escriba para buscar o crear nueva
+                  </small>
+                </div>
+                
                 <!-- Textarea -->
                 <textarea
                   v-else-if="field.type === 'textarea'"
@@ -134,6 +188,8 @@
                   :placeholder="field.placeholder"
                   :rows="field.rows || 3"
                   :required="field.required"
+                  :maxlength="field.maxlength"
+                  @input="validateField(field, $event)"
                 ></textarea>
                 
                 <!-- Date Input -->
@@ -141,6 +197,16 @@
                   v-else-if="field.type === 'date'"
                   v-model="form[field.key]"
                   type="date"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors[field.key] }"
+                  :required="field.required"
+                />
+                
+                <!-- Time Input -->
+                <input
+                  v-else-if="field.type === 'time'"
+                  v-model="form[field.key]"
+                  type="time"
                   class="form-control"
                   :class="{ 'is-invalid': errors[field.key] }"
                   :required="field.required"
@@ -352,6 +418,12 @@ const selectedFiles = reactive({})
 // Estado para opciones dinámicas
 const fieldOptions = reactive({})
 const loadingOptions = reactive({})
+
+// Estado para autocompletado tipo Odoo
+const autocompleteResults = reactive({})
+const showAutocompleteResults = reactive({})
+const autocompleteTimers = reactive({})
+const selectedEntity = reactive({})
 
 // Estado para modal de contraseña
 const showPasswordModal = ref(false)
@@ -643,6 +715,123 @@ async function handleSubmit() {
   } finally {
     saving.value = false
   }
+}
+
+// Función para validar un campo en tiempo real
+function validateField(field, event) {
+  const value = event.target.value
+  const fieldKey = field.key
+  
+  // Limpiar error previo
+  delete errors[fieldKey]
+  
+  // Si el campo tiene pattern, validar
+  if (field.pattern && value) {
+    const regex = new RegExp(field.pattern)
+    if (!regex.test(value)) {
+      errors[fieldKey] = field.validationMessage || 'Formato inválido'
+      return false
+    }
+  }
+  
+  // Validar longitud mínima
+  if (field.minlength && value && value.length < field.minlength) {
+    errors[fieldKey] = `Mínimo ${field.minlength} caracteres`
+    return false
+  }
+  
+  // Validar longitud máxima
+  if (field.maxlength && value && value.length > field.maxlength) {
+    // Truncar el valor
+    form[fieldKey] = value.substring(0, field.maxlength)
+    return false
+  }
+  
+  return true
+}
+
+// Funciones para autocompletado tipo Odoo
+async function handleAutocompleteSearch(field, event) {
+  const query = event.target.value
+  const fieldKey = field.key
+  
+  // Limpiar timer anterior
+  if (autocompleteTimers[fieldKey]) {
+    clearTimeout(autocompleteTimers[fieldKey])
+  }
+  
+  // Si no hay suficientes caracteres, limpiar resultados
+  if (!query || query.length < (field.minSearchLength || 3)) {
+    autocompleteResults[fieldKey] = []
+    showAutocompleteResults[fieldKey] = false
+    return
+  }
+  
+  // Debounce: esperar 300ms antes de buscar
+  autocompleteTimers[fieldKey] = setTimeout(async () => {
+    try {
+      loadingOptions[fieldKey] = true
+      
+      const endpoint = field.searchEndpoint || `/api/${field.entityType || 'entity'}/search`
+      const response = await fetch(`${API_BASE_URL}${endpoint}?q=${encodeURIComponent(query)}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
+          'Accept': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const results = await response.json()
+        autocompleteResults[fieldKey] = results
+        showAutocompleteResults[fieldKey] = true
+      }
+    } catch (error) {
+      console.error('Error searching:', error)
+      autocompleteResults[fieldKey] = []
+    } finally {
+      loadingOptions[fieldKey] = false
+    }
+  }, 300)
+}
+
+function selectAutocompleteResult(field, result) {
+  const fieldKey = field.key
+  
+  // Guardar la entidad seleccionada
+  selectedEntity[fieldKey] = result
+  
+  // Llenar el campo nombre
+  form[fieldKey] = result.nombre
+  
+  // Auto-llenar todos los campos del formulario con los datos de la entidad
+  Object.keys(result).forEach(key => {
+    if (key in form && key !== 'id') {
+      form[key] = result[key]
+    }
+  })
+  
+  // Ocultar resultados
+  showAutocompleteResults[fieldKey] = false
+  autocompleteResults[fieldKey] = []
+  
+  // Recargar campos dependientes si es necesario
+  if (result.estado_republica) {
+    reloadDependentFields('estado_republica')
+  }
+  if (result.municipio) {
+    reloadDependentFields('municipio')
+  }
+}
+
+// Click fuera para cerrar autocomplete
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.autocomplete-search-container')) {
+      Object.keys(showAutocompleteResults).forEach(key => {
+        showAutocompleteResults[key] = false
+      })
+    }
+  })
 }
 
 // Funciones para manejo de archivos
@@ -954,6 +1143,48 @@ initializeForm()
 
 [data-bs-theme="dark"] .password-modal .modal-footer {
   border-top-color: #495057;
+}
+
+/* Autocomplete Search Styles */
+.autocomplete-search-container {
+  position: relative;
+}
+
+.autocomplete-results {
+  position: absolute;
+  z-index: 1050;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+}
+
+.autocomplete-results .dropdown-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.autocomplete-results .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.autocomplete-results .dropdown-item:hover {
+  background: var(--bs-primary-bg-subtle);
+  transform: translateX(4px);
+}
+
+[data-bs-theme="dark"] .autocomplete-results {
+  background: var(--bs-dark);
+  border-color: #495057;
+}
+
+[data-bs-theme="dark"] .autocomplete-results .dropdown-item {
+  border-bottom-color: #495057;
+}
+
+[data-bs-theme="dark"] .autocomplete-results .dropdown-item:hover {
+  background: #2d3748;
 }
 
 @media (max-width: 768px) {
