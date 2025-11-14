@@ -281,21 +281,21 @@ const cards = [
     img: '/src/assets/icons/unidades.png',
   },
   {
+    key: 'viajes',
+    title: 'Viajes',
+    description: 'Gestión de rutas y viajes',
+    icon: 'bi-geo-alt-fill',
+    color: 'danger',
+    img: '/src/assets/icons/viajes.png',
+    badge: 'Nuevo',
+  },
+  {
     key: 'estadisticas',
     title: 'Estadísticas',
     description: 'Reportes y métricas',
     icon: 'bi-bar-chart-fill',
     color: 'dark',
     img: '/src/assets/icons/estadisticas.png',
-  },
-  {
-    key: 'respaldos',
-    title: 'Respaldos',
-    description: 'Gestión de backup MongoDB',
-    icon: 'bi-shield-check',
-    color: 'primary',
-    img: '/src/assets/icons/backup.png',
-    badge: 'DB',
   },
 ]
 
@@ -308,6 +308,7 @@ const routeMap = {
   'choferes': '/admin/app/choferes',
   'escuelas': '/admin/escuelas',
   'unidades': '/admin/app/unidades',
+  'viajes': '/admin/viajes',
   'estadisticas': '/admin/estadisticas',
   'respaldos': '/admin/app/respaldos',
   'ajustes': '/admin/configuracion',

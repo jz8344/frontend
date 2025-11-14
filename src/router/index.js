@@ -120,6 +120,12 @@ const routes = [
      meta: { middleware: [adminAuth] }
    },
    {
+     path: '/admin/viajes',
+     name: 'AdminViajes',
+     component: () => import('@/admin_frontend/AdminViajes.vue'),
+     meta: { middleware: [adminAuth] }
+   },
+   {
      path: '/admin/estadisticas',
      name: 'AdminEstadisticas',
      component: () => import('@/admin_frontend/AdminEstadisticas.vue'),
