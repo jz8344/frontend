@@ -105,15 +105,23 @@ export function useDynamicApp(appName) {
     try {
       loading.value = true
       
+      // Log para debug
+      console.log('Creating item with data:', data instanceof FormData ? 'FormData' : data)
+      
       // Configurar headers apropiados para FormData
-      const config = {}
+      const requestConfig = {}
       if (data instanceof FormData) {
-        config.headers = {
+        requestConfig.headers = {
           'Content-Type': 'multipart/form-data'
+        }
+        // Log FormData contents para debug
+        console.log('FormData entries:')
+        for (let pair of data.entries()) {
+          console.log(pair[0], pair[1])
         }
       }
       
-      const response = await http.post(apiEndpoint.value, data, config)
+      const response = await http.post(apiEndpoint.value, data, requestConfig)
       
       // Agregar el nuevo item a la lista local
       if (response.data) {
@@ -126,14 +134,27 @@ export function useDynamicApp(appName) {
       return { success: true, data: response.data }
     } catch (err) {
       console.error('Error creating item:', err)
+      console.error('Error response:', err.response)
+      
       let errorMessage = `Error creando ${config.singular.toLowerCase()}`
       
       if (err.response?.status === 422 && err.response?.data) {
         // Errores de validación
         const validationErrors = err.response.data
+        console.error('Validation errors:', validationErrors)
+        
         if (typeof validationErrors === 'object') {
+          // Mostrar todos los errores de validación
+          const allErrors = Object.entries(validationErrors)
+            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors[0] : errors}`)
+            .join(', ')
+          errorMessage = allErrors || errorMessage
+          
+          // Si solo queremos el primer error
           const firstError = Object.values(validationErrors)[0]
-          errorMessage = Array.isArray(firstError) ? firstError[0] : firstError
+          if (firstError) {
+            errorMessage = Array.isArray(firstError) ? firstError[0] : firstError
+          }
         }
       } else if (err.response?.data?.error) {
         errorMessage = err.response.data.error

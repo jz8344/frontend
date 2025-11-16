@@ -151,7 +151,7 @@ export const appConfigs = {
         placeholder: 'Alfanumérico único',
         icon: 'bi bi-qr-code',
         colClass: 'col-md-6',
-        pattern: '^[A-Z0-9-]+$',
+        pattern: '^[A-Z0-9\\-]+$',
         validationMessage: 'Solo letras mayúsculas, números y guiones',
         maxlength: 50
       },
@@ -316,7 +316,7 @@ export const appConfigs = {
         placeholder: 'Alfanumérico sin espacios',
         icon: 'bi bi-card-text',
         colClass: 'col-md-4',
-        pattern: '^[A-Z0-9-]+$',
+        pattern: '^[A-Z0-9\\-]+$',
         validationMessage: 'Solo letras mayúsculas, números y guiones',
         maxlength: 15
       },
@@ -349,7 +349,7 @@ export const appConfigs = {
         placeholder: 'Alfanumérico',
         icon: 'bi bi-gear',
         colClass: 'col-md-4',
-        pattern: '^[a-zA-Z0-9\\s-]+$',
+        pattern: '^[a-zA-Z0-9\\s\\-]+$',
         validationMessage: 'Solo letras, números, espacios y guiones'
       },
       {
@@ -539,7 +539,7 @@ export const appConfigs = {
         placeholder: 'Calle, número, referencias (letras, números y símbolos #/-)',
         icon: 'bi bi-geo-alt',
         colClass: 'col-md-12',
-        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\\s.,#°/-]+$',
+        pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\\s.,#°/\\-]+$',
         validationMessage: 'Solo letras, números y símbolos de dirección (#, /, -, .)'
       },
       {

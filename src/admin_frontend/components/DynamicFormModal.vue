@@ -733,35 +733,44 @@ async function handleSubmit() {
             }
           }
           
-          if (value !== null && value !== undefined) {
+          // Solo enviar valores no vacíos o requeridos
+          if (value !== null && value !== undefined && value !== '') {
             dataToSend.append(field.key, value)
+          } else if (field.required && field.defaultValue !== undefined) {
+            // Si es requerido pero está vacío, usar valor por defecto
+            dataToSend.append(field.key, field.defaultValue)
           }
         }
       })
     } else {
       // Sin archivos, usar objeto normal
-      dataToSend = { ...form }
+      const cleanedData = {}
       
-      // Para modo edición, solo enviar campos que han cambiado o que no son contraseñas vacías
-      if (props.isEditing) {
-        const cleanedData = {}
-        props.config.fields.forEach(field => {
-          const value = dataToSend[field.key]
-          
-          // No enviar contraseñas vacías en modo edición
+      props.config.fields.forEach(field => {
+        const value = form[field.key]
+        
+        // Para modo edición, no enviar contraseñas vacías ni archivos sin cambios
+        if (props.isEditing) {
           if (field.type === 'password' && (!value || value.trim() === '')) {
             return
           }
-          
-          // No enviar campos de archivo si no hay archivo nuevo seleccionado
           if (field.type === 'file' && !selectedFiles[field.key]) {
             return
           }
-          
+        }
+        
+        // Solo enviar valores no vacíos, o valores requeridos con default
+        if (value !== null && value !== undefined && value !== '') {
           cleanedData[field.key] = value
-        })
-        dataToSend = cleanedData
-      }
+        } else if (field.required && field.defaultValue !== undefined) {
+          cleanedData[field.key] = field.defaultValue
+        } else if (field.type === 'number' && value === '') {
+          // Para números, no enviar strings vacíos
+          return
+        }
+      })
+      
+      dataToSend = cleanedData
     }
     
     emit('save', dataToSend)
