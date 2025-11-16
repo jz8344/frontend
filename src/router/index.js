@@ -122,8 +122,9 @@ const routes = [
    {
      path: '/admin/viajes',
      name: 'AdminViajes',
-     component: () => import('@/admin_frontend/AdminViajes.vue'),
-     meta: { middleware: [adminAuth] }
+     component: () => import('@/admin_frontend/views/DynamicApp.vue'),
+     meta: { middleware: [adminAuth] },
+     props: { app: 'viajes' }
    },
    {
      path: '/admin/estadisticas',

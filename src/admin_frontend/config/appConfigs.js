@@ -713,6 +713,247 @@ export const appConfigs = {
     ]
   },
 
+  viajes: {
+    name: 'Viajes',
+    singular: 'Viaje',
+    description: 'Gestiona las rutas y viajes escolares',
+    icon: 'bi bi-geo-alt-fill',
+    searchFields: ['nombre_ruta', 'escuela.nombre', 'chofer.nombre', 'unidad.numero_unidad'],
+    sortFields: [
+      { key: 'fecha_viaje', label: 'Fecha' },
+      { key: 'nombre_ruta', label: 'Nombre Ruta' },
+      { key: 'estado', label: 'Estado' },
+      { key: 'hora_inicio_viaje', label: 'Hora Inicio' }
+    ],
+    displayFields: [
+      { 
+        key: 'fecha_viaje', 
+        label: 'Fecha',
+        type: 'date',
+        icon: 'bi bi-calendar',
+        sortable: true
+      },
+      { 
+        key: 'nombre_ruta', 
+        label: 'Nombre Ruta',
+        icon: 'bi bi-signpost',
+        sortable: true
+      },
+      { 
+        key: 'escuela.nombre', 
+        label: 'Escuela',
+        icon: 'bi bi-building',
+        getValue: (item) => item.escuela?.nombre || 'Sin asignar',
+        sortable: false
+      },
+      { 
+        key: 'chofer', 
+        label: 'Chofer',
+        icon: 'bi bi-person-badge',
+        getValue: (item) => item.chofer ? `${item.chofer.nombre} ${item.chofer.apellidos}` : 'Sin asignar',
+        sortable: false
+      },
+      { 
+        key: 'unidad.numero_unidad', 
+        label: 'Unidad',
+        icon: 'bi bi-bus-front',
+        getValue: (item) => item.unidad?.numero_unidad || 'Sin asignar',
+        sortable: false
+      },
+      { 
+        key: 'hora_inicio_viaje', 
+        label: 'Hora Inicio',
+        type: 'time',
+        icon: 'bi bi-clock',
+        sortable: true
+      },
+      { 
+        key: 'confirmaciones', 
+        label: 'Confirmaciones',
+        icon: 'bi bi-people',
+        getValue: (item) => `${item.ninos_confirmados || 0} / ${item.capacidad_maxima}`,
+        sortable: false
+      },
+      { 
+        key: 'estado', 
+        label: 'Estado',
+        type: 'badge',
+        sortable: true,
+        getValue: (item) => {
+          const badges = {
+            'pendiente': { text: 'Pendiente', class: 'bg-warning text-dark' },
+            'confirmaciones_abiertas': { text: 'Confirmaciones Abiertas', class: 'bg-success' },
+            'confirmaciones_cerradas': { text: 'Confirmaciones Cerradas', class: 'bg-info' },
+            'en_curso': { text: 'En Curso', class: 'bg-primary' },
+            'completado': { text: 'Completado', class: 'bg-secondary' },
+            'cancelado': { text: 'Cancelado', class: 'bg-danger' }
+          }
+          return badges[item.estado] || { text: item.estado, class: 'bg-secondary' }
+        }
+      }
+    ],
+    fields: [
+      {
+        key: 'nombre_ruta',
+        label: 'Nombre de la Ruta',
+        type: 'text',
+        required: true,
+        placeholder: 'Ej: Ruta Norte Matutina',
+        icon: 'bi bi-signpost',
+        colClass: 'col-md-12'
+      },
+      {
+        key: 'escuela_id',
+        label: 'Escuela',
+        type: 'select',
+        required: true,
+        placeholder: 'Seleccionar escuela',
+        icon: 'bi bi-building',
+        colClass: 'col-md-6',
+        relatedKey: 'escuelas',
+        relatedLabel: 'nombre'
+      },
+      {
+        key: 'chofer_id',
+        label: 'Chofer',
+        type: 'select',
+        required: false,
+        placeholder: 'Seleccionar chofer',
+        icon: 'bi bi-person-badge',
+        colClass: 'col-md-6',
+        relatedKey: 'choferes',
+        relatedLabel: 'nombre',
+        relatedFormat: (item) => `${item.nombre} ${item.apellidos}`
+      },
+      {
+        key: 'unidad_id',
+        label: 'Unidad',
+        type: 'select',
+        required: false,
+        placeholder: 'Seleccionar unidad',
+        icon: 'bi bi-bus-front',
+        colClass: 'col-md-6',
+        relatedKey: 'unidades',
+        relatedLabel: 'numero_unidad',
+        relatedFormat: (item) => `${item.numero_unidad} - ${item.modelo || ''}`
+      },
+      {
+        key: 'fecha_viaje',
+        label: 'Fecha del Viaje',
+        type: 'date',
+        required: true,
+        placeholder: 'Fecha del viaje',
+        icon: 'bi bi-calendar',
+        colClass: 'col-md-6',
+        min: new Date().toISOString().split('T')[0]
+      },
+      {
+        key: 'capacidad_maxima',
+        label: 'Capacidad Máxima',
+        type: 'number',
+        required: false,
+        placeholder: '30',
+        icon: 'bi bi-people',
+        colClass: 'col-md-6',
+        min: 1,
+        max: 100,
+        defaultValue: 30
+      },
+      {
+        key: 'hora_inicio_confirmacion',
+        label: 'Inicio Confirmación',
+        type: 'time',
+        required: true,
+        placeholder: '06:00',
+        icon: 'bi bi-clock',
+        colClass: 'col-md-6',
+        defaultValue: '06:00',
+        help: 'Hora de inicio del período de confirmación'
+      },
+      {
+        key: 'hora_fin_confirmacion',
+        label: 'Fin Confirmación',
+        type: 'time',
+        required: true,
+        placeholder: '06:30',
+        icon: 'bi bi-clock-fill',
+        colClass: 'col-md-6',
+        defaultValue: '06:30',
+        help: 'Hora de cierre del período de confirmación'
+      },
+      {
+        key: 'hora_inicio_viaje',
+        label: 'Inicio de Viaje',
+        type: 'time',
+        required: true,
+        placeholder: '06:45',
+        icon: 'bi bi-play-circle',
+        colClass: 'col-md-6',
+        defaultValue: '06:45',
+        help: 'Hora en que el chofer inicia el viaje'
+      },
+      {
+        key: 'hora_llegada_estimada',
+        label: 'Llegada Estimada',
+        type: 'time',
+        required: true,
+        placeholder: '08:00',
+        icon: 'bi bi-flag-fill',
+        colClass: 'col-md-6',
+        defaultValue: '08:00',
+        help: 'Hora estimada de llegada a la escuela'
+      },
+      {
+        key: 'notas',
+        label: 'Notas',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Observaciones adicionales sobre el viaje...',
+        icon: 'bi bi-card-text',
+        colClass: 'col-md-12',
+        rows: 3
+      }
+    ],
+    apiEndpoint: '/admin/viajes',
+    canCreate: true,
+    canEdit: true,
+    canDelete: true,
+    canView: true,
+    customActions: [
+      {
+        name: 'abrir-confirmaciones',
+        label: 'Abrir Confirmaciones',
+        icon: 'bi bi-unlock',
+        type: 'success',
+        itemAction: true,
+        visibleWhen: (item) => item.estado === 'pendiente',
+        endpoint: (id) => `/admin/viajes/${id}/abrir-confirmaciones`,
+        method: 'POST',
+        successMessage: 'Periodo de confirmaciones abierto'
+      },
+      {
+        name: 'cerrar-confirmaciones',
+        label: 'Cerrar Confirmaciones',
+        icon: 'bi bi-lock',
+        type: 'warning',
+        itemAction: true,
+        visibleWhen: (item) => item.estado === 'confirmaciones_abiertas',
+        endpoint: (id) => `/admin/viajes/${id}/cerrar-confirmaciones`,
+        method: 'POST',
+        successMessage: 'Periodo de confirmaciones cerrado'
+      },
+      {
+        name: 'ver-confirmaciones',
+        label: 'Ver Confirmaciones',
+        icon: 'bi bi-list-check',
+        type: 'info',
+        itemAction: true,
+        visibleWhen: (item) => ['confirmaciones_abiertas', 'confirmaciones_cerradas', 'en_curso', 'completado'].includes(item.estado),
+        customHandler: true
+      }
+    ]
+  },
+
   respaldos: {
     name: 'Respaldos',
     singular: 'Respaldo',

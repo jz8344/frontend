@@ -29,10 +29,18 @@ export function useDynamicApp(appName) {
     
     try {
       const response = await http.get(apiEndpoint.value)
-      items.value = response.data || []
+      let data = response.data || []
+      
+      // Extraer data del wrapper si existe (para APIs de Laravel que devuelven { data: [...] })
+      if (data.data && Array.isArray(data.data)) {
+        data = data.data
+      }
+      
+      items.value = data
     } catch (err) {
       error.value = `Error cargando ${config.name.toLowerCase()}: ${err.message}`
       console.error('Error loading items:', err)
+      items.value = []
     } finally {
       loading.value = false
     }
@@ -64,12 +72,20 @@ export function useDynamicApp(appName) {
           case 'unidades':
             endpoint = '/admin/unidades'
             break
+          case 'escuelas':
+            endpoint = '/admin/escuelas'
+            break
           default:
             endpoint = `/admin/${field.relatedKey}`
         }
         
         const response = await http.get(endpoint)
         let data = response.data || []
+        
+        // Extraer data del wrapper si existe
+        if (data.data && Array.isArray(data.data)) {
+          data = data.data
+        }
         
         // Filtrar usuarios para padres (solo usuarios con rol 'usuario')
         if (field.relatedKey === 'padres') {

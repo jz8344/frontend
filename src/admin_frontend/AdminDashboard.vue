@@ -308,7 +308,7 @@ const routeMap = {
   'choferes': '/admin/app/choferes',
   'escuelas': '/admin/escuelas',
   'unidades': '/admin/app/unidades',
-  'viajes': '/admin/viajes',
+  'viajes': '/admin/app/viajes',
   'estadisticas': '/admin/estadisticas',
   'respaldos': '/admin/app/respaldos',
   'ajustes': '/admin/configuracion',
