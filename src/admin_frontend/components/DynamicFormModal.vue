@@ -284,7 +284,7 @@
                       <div class="current-file-preview">
                         <img 
                           v-if="isImage(form[field.key])"
-                          :src="`${API_BASE_URL}/${form[field.key]}`" 
+                          :src="getImageUrl(form[field.key])" 
                           alt="Current"
                           class="img-thumbnail"
                           style="max-width: 150px; max-height: 150px;"
@@ -923,6 +923,18 @@ function handleFileChange(fieldKey, event) {
     delete selectedFiles[fieldKey]
     delete filePreview[fieldKey]
   }
+}
+
+function getImageUrl(imagePath) {
+  if (!imagePath) return ''
+  
+  // Si la URL ya es completa (http:// o https://), devolverla tal cual
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath
+  }
+  
+  // Si es una ruta relativa, agregar el API_BASE_URL
+  return `${API_BASE_URL}/${imagePath}`
 }
 
 function isImage(filePath) {

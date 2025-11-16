@@ -135,7 +135,7 @@
           <!-- Imagen de la unidad si existe -->
           <div v-if="config.displayFields?.[0]?.type === 'image' && getDisplayValue(item, config.displayFields[0])" class="card-img-top-container">
             <img 
-              :src="`${API_BASE_URL}/${getDisplayValue(item, config.displayFields[0])}`"
+              :src="getImageUrl(getDisplayValue(item, config.displayFields[0]))"
               :alt="item.matricula || 'Imagen'"
               class="card-img-top"
               style="height: 150px; object-fit: cover;"
@@ -267,7 +267,7 @@
                 <div v-else-if="field.type === 'image'">
                   <img 
                     v-if="getDisplayValue(item, field)" 
-                    :src="`${API_BASE_URL}/${getDisplayValue(item, field)}`"
+                    :src="getImageUrl(getDisplayValue(item, field))"
                     :alt="item.matricula || 'Imagen'"
                     class="table-image"
                     style="width: 50px; height: 40px; object-fit: cover; border-radius: 4px;"
@@ -502,6 +502,18 @@ function getCardDisplayFields(item) {
   // Para las tarjetas, si el primer campo es una imagen, mostramos los siguientes campos
   const startIndex = props.config.displayFields[0]?.type === 'image' ? 2 : 1
   return props.config.displayFields.slice(startIndex, startIndex + 3)
+}
+
+function getImageUrl(imagePath) {
+  if (!imagePath) return ''
+  
+  // Si la URL ya es completa (http:// o https://), devolverla tal cual
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath
+  }
+  
+  // Si es una ruta relativa, agregar el API_BASE_URL
+  return `${API_BASE_URL}/${imagePath}`
 }
 
 function handleImageError(event) {
