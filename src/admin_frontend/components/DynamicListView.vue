@@ -289,6 +289,18 @@
               </td>
               <td class="actions-column text-center">
                 <div class="btn-group btn-group-sm">
+                  <!-- Acciones personalizadas -->
+                  <button
+                    v-for="action in getVisibleActions(item)"
+                    :key="action.name"
+                    :class="`btn btn-outline-${action.type || 'secondary'}`"
+                    @click="handleCustomAction(action, item)"
+                    :title="action.label"
+                  >
+                    <i :class="action.icon"></i>
+                  </button>
+                  
+                  <!-- Acciones estándar -->
                   <button 
                     class="btn btn-outline-primary" 
                     @click="openEditModal(item)"
@@ -349,7 +361,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['toggleSelection', 'selectAll', 'clearSelection', 'openEditModal', 'deleteItem', 'sort'])
+const emit = defineEmits(['toggleSelection', 'selectAll', 'clearSelection', 'openEditModal', 'deleteItem', 'sort', 'customAction'])
 
 // Estado reactivo
 const viewMode = ref('list')
@@ -502,6 +514,20 @@ function openEditModal(item) {
 
 function deleteItem(id) {
   emit('deleteItem', id)
+}
+
+function getVisibleActions(item) {
+  if (!props.config || !props.config.customActions) return []
+  
+  return props.config.customActions.filter(action => {
+    if (!action.itemAction) return false
+    if (!action.visibleWhen) return true
+    return action.visibleWhen(item)
+  })
+}
+
+function handleCustomAction(action, item) {
+  emit('customAction', { action, item })
 }
 
 function requestSort(field, direction = null) {

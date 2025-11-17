@@ -34,6 +34,7 @@
         @openEditModal="slotProps.openEditModal"
         @deleteItem="slotProps.deleteItem"
         @sort="handleSort"
+        @customAction="handleCustomAction"
       />
     </template>
   </DynamicAppLayout>
@@ -58,6 +59,7 @@ import DynamicListView from '../components/DynamicListView.vue'
 import BackupApp from './BackupApp.vue'
 import { useDynamicApp } from '@/composables/useDynamicApp.js'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
+import http from '@/config/api.js'
 
 // Definir props (para evitar warnings de Vue Router)
 const props = defineProps({
@@ -183,6 +185,44 @@ function handleNotifications() {
 
 function handleHistory() {
   showAlert('Funcionalidad de historial en desarrollo', 'info')
+}
+
+async function handleCustomAction({ action, item }) {
+  try {
+    if (action.customHandler) {
+      // Para handlers personalizados (como ver confirmaciones)
+      showAlert(`Funcionalidad "${action.label}" en desarrollo`, 'info')
+      return
+    }
+    
+    // Confirmar acción si es necesaria
+    if (!confirm(`¿Está seguro de que desea ${action.label.toLowerCase()}?`)) {
+      return
+    }
+    
+    // Ejecutar la acción
+    const endpoint = typeof action.endpoint === 'function' 
+      ? action.endpoint(item.id) 
+      : action.endpoint
+    
+    const method = action.method || 'POST'
+    
+    loading.value = true
+    const response = await http[method.toLowerCase()](endpoint)
+    
+    if (response.data && response.data.success) {
+      showAlert(action.successMessage || 'Acción ejecutada exitosamente', 'success')
+      await refresh()
+    } else {
+      showAlert('Error al ejecutar la acción', 'danger')
+    }
+  } catch (err) {
+    console.error('Error en acción personalizada:', err)
+    const errorMessage = err.response?.data?.message || 'Error al ejecutar la acción'
+    showAlert(errorMessage, 'danger')
+  } finally {
+    loading.value = false
+  }
 }
 
 // Métodos de utilidad
