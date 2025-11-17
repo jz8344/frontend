@@ -101,6 +101,13 @@ export const appConfigs = {
       { key: 'grupo', label: 'Grupo', icon: 'bi bi-people', sortable: true },
       { key: 'codigo_qr', label: 'Código QR', type: 'code', sortable: false },
       { 
+        key: 'escuela.nombre', 
+        label: 'Escuela',
+        icon: 'bi bi-building',
+        getValue: (item) => item.escuela ? item.escuela.nombre : '-',
+        sortable: false
+      },
+      { 
         key: 'padre.nombre', 
         label: 'Padre/Tutor',
         icon: 'bi bi-person-check',
@@ -164,6 +171,17 @@ export const appConfigs = {
         icon: 'bi bi-person-check',
         colClass: 'col-md-6',
         relatedKey: 'padres',
+        relatedLabel: 'nombre'
+      },
+      {
+        key: 'escuela_id',
+        label: 'Escuela',
+        type: 'select',
+        required: false,
+        placeholder: 'Seleccionar escuela',
+        icon: 'bi bi-building',
+        colClass: 'col-md-6',
+        relatedKey: 'escuelas',
         relatedLabel: 'nombre'
       }
     ]

@@ -253,9 +253,9 @@
                 <div v-if="field.type === 'badge'" class="badge-container">
                   <span 
                     class="badge"
-                    :class="getBadgeClass(getDisplayValue(item, field))"
+                    :class="getBadgeClass(item, field)"
                   >
-                    {{ getDisplayValue(item, field) }}
+                    {{ getBadgeText(item, field) }}
                   </span>
                 </div>
                 <div v-else-if="field.type === 'avatar'" class="d-flex align-items-center">
@@ -448,7 +448,26 @@ function formatDate(value) {
   }
 }
 
-function getBadgeClass(value) {
+function getBadgeText(item, field) {
+  const value = getDisplayValue(item, field)
+  
+  // Si es un objeto con propiedad 'text', extraerla
+  if (typeof value === 'object' && value !== null && value.text) {
+    return value.text
+  }
+  
+  return value
+}
+
+function getBadgeClass(item, field) {
+  const value = getDisplayValue(item, field)
+  
+  // Si es un objeto con propiedad 'class', extraerla
+  if (typeof value === 'object' && value !== null && value.class) {
+    return value.class
+  }
+  
+  // Si es un string, usar las clases por defecto
   if (typeof value !== 'string') return 'bg-secondary'
   
   const statusClasses = {
