@@ -834,8 +834,8 @@ export const appConfigs = {
         icon: 'bi bi-bus-front',
         colClass: 'col-md-6',
         relatedKey: 'unidades',
-        relatedLabel: 'numero_unidad',
-        relatedFormat: (item) => `${item.numero_unidad} - ${item.modelo || ''}`
+        relatedLabel: 'matricula',
+        getValue: (item) => `${item.matricula} - ${item.modelo || item.marca || ''}`
       },
       {
         key: 'fecha_viaje',

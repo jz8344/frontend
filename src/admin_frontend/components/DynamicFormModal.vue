@@ -714,7 +714,7 @@ async function handleSubmit() {
       
       // Agregar campos de formulario
       props.config.fields.forEach(field => {
-        const value = form[field.key]
+        let value = form[field.key]
         
         if (field.type === 'file') {
           // Manejar archivos
@@ -733,12 +733,21 @@ async function handleSubmit() {
             }
           }
           
+          // Para campos tipo time, asegurar formato HH:MM:SS
+          if (field.type === 'time' && value && value.length === 5) {
+            value = value + ':00'
+          }
+          
           // Solo enviar valores no vacíos o requeridos
           if (value !== null && value !== undefined && value !== '') {
             dataToSend.append(field.key, value)
           } else if (field.required && field.defaultValue !== undefined) {
-            // Si es requerido pero está vacío, usar valor por defecto
-            dataToSend.append(field.key, field.defaultValue)
+            let defaultVal = field.defaultValue
+            // Agregar :00 a valores default de time si es necesario
+            if (field.type === 'time' && defaultVal && defaultVal.length === 5) {
+              defaultVal = defaultVal + ':00'
+            }
+            dataToSend.append(field.key, defaultVal)
           }
         }
       })
@@ -747,7 +756,7 @@ async function handleSubmit() {
       const cleanedData = {}
       
       props.config.fields.forEach(field => {
-        const value = form[field.key]
+        let value = form[field.key]
         
         // Para modo edición, no enviar contraseñas vacías ni archivos sin cambios
         if (props.isEditing) {
@@ -759,11 +768,21 @@ async function handleSubmit() {
           }
         }
         
+        // Para campos tipo time, asegurar formato HH:MM:SS
+        if (field.type === 'time' && value && value.length === 5) {
+          value = value + ':00'
+        }
+        
         // Solo enviar valores no vacíos, o valores requeridos con default
         if (value !== null && value !== undefined && value !== '') {
           cleanedData[field.key] = value
         } else if (field.required && field.defaultValue !== undefined) {
-          cleanedData[field.key] = field.defaultValue
+          let defaultVal = field.defaultValue
+          // Agregar :00 a valores default de time si es necesario
+          if (field.type === 'time' && defaultVal && defaultVal.length === 5) {
+            defaultVal = defaultVal + ':00'
+          }
+          cleanedData[field.key] = defaultVal
         } else if (field.type === 'number' && value === '') {
           // Para números, no enviar strings vacíos
           return
