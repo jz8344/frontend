@@ -41,6 +41,8 @@
                   :pattern="field.pattern"
                   :minlength="field.minlength"
                   :maxlength="field.maxlength"
+                  :readonly="field.readonly || (isEditing && field.editMode === 'readonly')"
+                  :disabled="field.readonly || (isEditing && field.editMode === 'readonly')"
                   @input="validateField(field, $event)"
                 />
                 
@@ -303,8 +305,14 @@
                   {{ errors[field.key] }}
                 </div>
                 
+                <!-- Help text for readonly fields in edit mode -->
+                <div v-if="isEditing && field.editMode === 'readonly' && field.helpText" class="form-text text-warning">
+                  <i class="bi bi-lock me-1"></i>
+                  {{ field.helpText }}
+                </div>
+                
                 <!-- Help text -->
-                <div v-if="field.help" class="form-text">
+                <div v-else-if="field.help" class="form-text">
                   <i class="bi bi-info-circle me-1"></i>
                   {{ field.help }}
                 </div>

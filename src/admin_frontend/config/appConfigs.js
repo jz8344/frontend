@@ -160,7 +160,10 @@ export const appConfigs = {
         colClass: 'col-md-6',
         pattern: '^[A-Z0-9\\-]+$',
         validationMessage: 'Solo letras mayúsculas, números y guiones',
-        maxlength: 50
+        maxlength: 50,
+        readonly: true,
+        editMode: 'readonly',
+        helpText: 'El código QR no puede modificarse una vez creado'
       },
       {
         key: 'padre_id',
