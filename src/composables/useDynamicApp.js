@@ -123,15 +123,21 @@ export function useDynamicApp(appName) {
       
       const response = await http.post(apiEndpoint.value, data, requestConfig)
       
+      // Extraer data del wrapper si existe
+      let itemData = response.data
+      if (itemData && itemData.data) {
+        itemData = itemData.data
+      }
+      
       // Agregar el nuevo item a la lista local
-      if (response.data) {
-        items.value.push(response.data)
+      if (itemData) {
+        items.value.push(itemData)
       }
       
       // Recargar la lista completa para asegurar consistencia
       await loadItems()
       
-      return { success: true, data: response.data }
+      return { success: true, data: itemData }
     } catch (err) {
       console.error('Error creating item:', err)
       console.error('Error response:', err.response)
@@ -189,16 +195,22 @@ export function useDynamicApp(appName) {
       
       const response = await http[method](url, requestData, requestConfig)
       
+      // Extraer data del wrapper si existe
+      let itemData = response.data
+      if (itemData && itemData.data) {
+        itemData = itemData.data
+      }
+      
       // Actualizar el item en la lista local
       const index = items.value.findIndex(item => item.id === id)
-      if (index >= 0 && response.data) {
-        items.value[index] = response.data
+      if (index >= 0 && itemData) {
+        items.value[index] = itemData
       }
       
       // Recargar la lista completa para asegurar consistencia
       await loadItems()
       
-      return { success: true, data: response.data }
+      return { success: true, data: itemData }
     } catch (err) {
       console.error('Error updating item:', err)
       let errorMessage = `Error actualizando ${config.singular.toLowerCase()}`
