@@ -29,8 +29,17 @@
                 <input v-model="form.grupo" class="form-control" placeholder="Ej: A" />
               </div>
               <div class="col-md-3">
+                <label class="form-label">Escuela</label>
+                <select v-model="form.escuela_id" class="form-select" required>
+                  <option value="" disabled>Seleccionar escuela</option>
+                  <option v-for="e in escuelas" :key="e.id" :value="e.id">
+                    {{ e.nombre }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-3">
                 <label class="form-label">Código QR</label>
-                <input v-model="form.codigo_qr" class="form-control" placeholder="Código QR único" required />
+                <input v-model="form.codigo_qr" class="form-control" placeholder="Código QR único" :required="!form.id" :disabled="form.id" />
               </div>
               <div class="col-md-2">
                 <label class="form-label">Padre/Tutor</label>
@@ -78,6 +87,7 @@
                     <th>Nombre</th>
                     <th>Grado</th>
                     <th>Grupo</th>
+                    <th>Escuela</th>
                     <th>Código QR</th>
                     <th>Padre/Tutor</th>
                     <th class="text-center">Acciones</th>
@@ -89,6 +99,7 @@
                     <td>{{ h.nombre }}</td>
                     <td>{{ h.grado }}</td>
                     <td>{{ h.grupo }}</td>
+                    <td>{{ h.escuela?.nombre || h.escuela || '-' }}</td>
                     <td><code>{{ h.codigo_qr }}</code></td>
                     <td>{{ h.padre?.nombre }} {{ h.padre?.apellidos }}</td>
                     <td class="text-center">
@@ -103,7 +114,7 @@
                     </td>
                   </tr>
                   <tr v-if="hijos.length === 0">
-                    <td colspan="7" class="text-center text-muted py-4">
+                    <td colspan="8" class="text-center text-muted py-4">
                       No hay hijos registrados
                     </td>
                   </tr>
@@ -127,12 +138,14 @@ const { setupAxiosInterceptors } = useAdminAuth()
 
 const hijos = ref([])
 const padres = ref([])
+const escuelas = ref([])
 const loading = ref(false)
 const form = reactive({ 
   id: null, 
   nombre: '', 
   grado: '', 
   grupo: '', 
+  escuela_id: '', 
   codigo_qr: '', 
   padre_id: '' 
 })
@@ -140,12 +153,14 @@ const form = reactive({
 async function cargar() {
   try {
     loading.value = true
-    const [hRes, uRes] = await Promise.all([
+    const [hRes, uRes, eRes] = await Promise.all([
       http.get('/admin/hijos'),
-      http.get('/admin/usuarios')
+      http.get('/admin/usuarios'),
+      http.get('/admin/escuelas')
     ])
     hijos.value = hRes.data
     padres.value = uRes.data.filter(u => u.rol === 'usuario')
+    escuelas.value = eRes.data
   } catch (error) {
     console.error('Error cargando datos:', error)
   } finally {
@@ -180,6 +195,7 @@ function reset() {
     nombre: '',
     grado: '',
     grupo: '',
+    escuela_id: '',
     codigo_qr: '',
     padre_id: ''
   })
