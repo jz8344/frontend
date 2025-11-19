@@ -193,13 +193,14 @@
             </div>
 
             <div class="form-group">
-              <label>Capacidad Máxima</label>
+              <label>Capacidad Máxima *</label>
               <input 
                 type="number" 
-                v-model="formData.capacidad_maxima" 
+                v-model.number="formData.capacidad_maxima" 
                 min="1"
-                placeholder="Se obtiene automáticamente de la unidad"
-                :disabled="!!formData.unidad_id">
+                required
+                :placeholder="formData.unidad_id ? 'Auto (de unidad)' : 'Ingrese capacidad'"
+                :readonly="!!formData.unidad_id">
               <small v-if="selectedUnidadCapacidad">Capacidad de unidad: {{ selectedUnidadCapacidad }} asientos</small>
             </div>
 
@@ -467,16 +468,30 @@ export default {
   watch: {
     'formData.unidad_id'(newVal) {
       if (newVal) {
-        const unidad = this.unidades.find(u => u.id === newVal);
+        // Convertir a número para comparación
+        const unidadId = parseInt(newVal);
+        const unidad = this.unidades.find(u => u.id === unidadId);
+        console.log('Unidad seleccionada:', unidad);
         if (unidad && unidad.numero_asientos) {
-          this.formData.capacidad_maxima = unidad.numero_asientos;
+          this.formData.capacidad_maxima = parseInt(unidad.numero_asientos);
+          console.log('Capacidad asignada:', this.formData.capacidad_maxima);
         }
+      } else {
+        // Si se deselecciona la unidad, permitir edición manual
+        this.formData.capacidad_maxima = null;
       }
     },
     esViajeRecurrente(newVal) {
       if (newVal) {
         // Si es recurrente, establecer lunes a viernes automáticamente
         this.formData.dias_semana = [1, 2, 3, 4, 5];
+        // Sugerir fecha fin (1 mes después)
+        if (this.formData.fecha_viaje && !this.formData.fecha_fin) {
+          const fechaInicio = new Date(this.formData.fecha_viaje);
+          const fechaFin = new Date(fechaInicio);
+          fechaFin.setMonth(fechaFin.getMonth() + 1);
+          this.formData.fecha_fin = fechaFin.toISOString().split('T')[0];
+        }
       } else {
         // Si no es recurrente, limpiar fecha_fin
         this.formData.fecha_fin = '';
@@ -531,7 +546,38 @@ export default {
     openModal(mode, viaje = null) {
       this.modalMode = mode;
       if (mode === 'edit' && viaje) {
-        this.formData = { ...viaje };
+        // Cargar datos del viaje
+        this.formData = {
+          id: viaje.id,
+          nombre_ruta: viaje.nombre_ruta,
+          escuela_id: viaje.escuela_id,
+          chofer_id: viaje.chofer_id || '',
+          unidad_id: viaje.unidad_id || '',
+          turno: viaje.turno || '',
+          tipo_viaje: viaje.tipo_viaje || 'ida',
+          hora_inicio_confirmacion: viaje.hora_inicio_confirmacion,
+          hora_fin_confirmacion: viaje.hora_fin_confirmacion,
+          hora_inicio_viaje: viaje.hora_inicio_viaje,
+          hora_llegada_estimada: viaje.hora_llegada_estimada,
+          fecha_viaje: viaje.fecha_viaje,
+          fecha_fin: viaje.fecha_fin || '',
+          notas: viaje.notas || '',
+          capacidad_maxima: viaje.capacidad_maxima,
+          dias_semana: Array.isArray(viaje.dias_semana) ? viaje.dias_semana : [],
+          confirmacion_automatica: viaje.confirmacion_automatica || false,
+          crear_retorno: false, // No mostrar en edición
+          hora_inicio_confirmacion_retorno: '',
+          hora_fin_confirmacion_retorno: '',
+          hora_inicio_retorno: '',
+          hora_llegada_retorno: ''
+        };
+        
+        // Detectar si es viaje recurrente (tiene fecha_fin o dias_semana incluye Lun-Vie)
+        const diasLunVie = [1, 2, 3, 4, 5];
+        const tieneTodosLosDias = diasLunVie.every(dia => 
+          this.formData.dias_semana.includes(dia)
+        );
+        this.esViajeRecurrente = tieneTodosLosDias && !!viaje.fecha_fin;
       } else {
         this.resetForm();
       }
@@ -570,18 +616,54 @@ export default {
     async submitForm() {
       this.loading = true;
       try {
+        // Preparar datos para enviar
+        const dataToSend = { ...this.formData };
+        
+        // Si no hay unidad, asegurar que capacidad_maxima sea requerida
+        if (!dataToSend.unidad_id && !dataToSend.capacidad_maxima) {
+          this.$toast?.error('Debes seleccionar una unidad o ingresar capacidad máxima');
+          this.loading = false;
+          return;
+        }
+        
+        // Convertir IDs a números
+        if (dataToSend.escuela_id) dataToSend.escuela_id = parseInt(dataToSend.escuela_id);
+        if (dataToSend.chofer_id) dataToSend.chofer_id = parseInt(dataToSend.chofer_id);
+        if (dataToSend.unidad_id) dataToSend.unidad_id = parseInt(dataToSend.unidad_id);
+        if (dataToSend.capacidad_maxima) dataToSend.capacidad_maxima = parseInt(dataToSend.capacidad_maxima);
+        
+        // Limpiar strings vacíos
+        if (dataToSend.chofer_id === '') dataToSend.chofer_id = null;
+        if (dataToSend.unidad_id === '') dataToSend.unidad_id = null;
+        if (dataToSend.notas === '') dataToSend.notas = null;
+        if (dataToSend.fecha_fin === '') dataToSend.fecha_fin = null;
+        
+        console.log('Sending data:', dataToSend);
+        
         if (this.modalMode === 'create') {
-          await axios.post('/api/admin/viajes', this.formData);
+          const response = await axios.post('/api/admin/viajes', dataToSend);
+          console.log('Create response:', response.data);
           this.$toast?.success('Viaje creado exitosamente');
         } else {
-          await axios.put(`/api/admin/viajes/${this.formData.id}`, this.formData);
+          const response = await axios.put(`/api/admin/viajes/${dataToSend.id}`, dataToSend);
+          console.log('Update response:', response.data);
           this.$toast?.success('Viaje actualizado exitosamente');
         }
         this.closeModal();
         this.loadViajes();
       } catch (error) {
         console.error('Error al guardar viaje:', error);
-        this.$toast?.error(error.response?.data?.message || 'Error al guardar viaje');
+        console.error('Error response:', error.response?.data);
+        
+        // Mostrar errores de validación
+        if (error.response?.data?.errors) {
+          const errors = error.response.data.errors;
+          console.log('Validation errors:', errors);
+          const firstError = Object.values(errors)[0][0];
+          this.$toast?.error(firstError);
+        } else {
+          this.$toast?.error(error.response?.data?.message || 'Error al guardar viaje');
+        }
       } finally {
         this.loading = false;
       }
