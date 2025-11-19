@@ -166,6 +166,24 @@
             </div>
 
             <div class="form-group">
+              <label>Turno *</label>
+              <select v-model="formData.turno" required>
+                <option value="">Seleccionar turno</option>
+                <option value="matutino">Matutino (Mañana)</option>
+                <option value="vespertino">Vespertino (Tarde)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Tipo de Viaje</label>
+              <select v-model="formData.tipo_viaje" disabled>
+                <option value="ida">Ida (Casa → Escuela)</option>
+                <option value="retorno">Retorno (Escuela → Casa)</option>
+              </select>
+              <small>Los viajes de retorno se crean automáticamente</small>
+            </div>
+
+            <div class="form-group">
               <label>Fecha del Viaje *</label>
               <input 
                 type="date" 
@@ -180,7 +198,9 @@
                 type="number" 
                 v-model="formData.capacidad_maxima" 
                 min="1"
-                placeholder="30">
+                placeholder="Se obtiene automáticamente de la unidad"
+                :disabled="!!formData.unidad_id">
+              <small v-if="selectedUnidadCapacidad">Capacidad de unidad: {{ selectedUnidadCapacidad }} asientos</small>
             </div>
 
             <div class="form-group">
@@ -217,6 +237,89 @@
                 v-model="formData.hora_llegada_estimada" 
                 required>
               <small>Hora estimada de llegada a la escuela</small>
+            </div>
+
+            <!-- Sección de Viaje Recurrente -->
+            <div class="form-group full-width">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="esViajeRecurrente">
+                <strong>Viaje Recurrente (Lunes a Viernes)</strong>
+              </label>
+            </div>
+
+            <div v-if="esViajeRecurrente" class="form-group">
+              <label>Fecha de Finalización</label>
+              <input 
+                type="date" 
+                v-model="formData.fecha_fin" 
+                :min="formData.fecha_viaje">
+              <small>Fecha hasta la que se repite el viaje (Lun-Vie)</small>
+            </div>
+
+            <div v-if="!esViajeRecurrente" class="form-group full-width">
+              <label>Días de la Semana (viaje único)</label>
+              <div class="dias-semana">
+                <label v-for="dia in diasSemana" :key="dia.value" class="dia-checkbox">
+                  <input 
+                    type="checkbox" 
+                    :value="dia.value" 
+                    v-model="formData.dias_semana"
+                    :disabled="esViajeRecurrente">
+                  {{ dia.label }}
+                </label>
+              </div>
+              <small>Selecciona los días en que se realiza este viaje</small>
+            </div>
+
+            <!-- Sección de Confirmación Automática -->
+            <div class="form-group full-width">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="formData.confirmacion_automatica">
+                <strong>Confirmación Automática</strong>
+              </label>
+              <small>Al abrir confirmaciones, usa la ubicación guardada del niño automáticamente</small>
+            </div>
+
+            <!-- Sección de Viaje de Retorno -->
+            <div v-if="formData.tipo_viaje === 'ida'" class="form-group full-width">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="formData.crear_retorno">
+                <strong>Crear Viaje de Retorno Automático</strong>
+              </label>
+            </div>
+
+            <div v-if="formData.crear_retorno && formData.tipo_viaje === 'ida'" class="retorno-section">
+              <h4>⚙️ Configuración del Viaje de Retorno</h4>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Inicio Confirmación (Retorno)</label>
+                  <input 
+                    type="time" 
+                    v-model="formData.hora_inicio_confirmacion_retorno"
+                    placeholder="12:00">
+                </div>
+                <div class="form-group">
+                  <label>Fin Confirmación (Retorno)</label>
+                  <input 
+                    type="time" 
+                    v-model="formData.hora_fin_confirmacion_retorno"
+                    placeholder="12:30">
+                </div>
+                <div class="form-group">
+                  <label>Inicio Viaje (Retorno)</label>
+                  <input 
+                    type="time" 
+                    v-model="formData.hora_inicio_retorno"
+                    placeholder="13:00">
+                </div>
+                <div class="form-group">
+                  <label>Llegada Estimada (Retorno)</label>
+                  <input 
+                    type="time" 
+                    v-model="formData.hora_llegada_retorno"
+                    placeholder="15:00">
+                </div>
+              </div>
             </div>
 
             <div class="form-group full-width">
@@ -321,19 +424,63 @@ export default {
         escuela_id: '',
         chofer_id: '',
         unidad_id: '',
+        turno: '',
+        tipo_viaje: 'ida',
         hora_inicio_confirmacion: '06:00',
         hora_fin_confirmacion: '06:30',
         hora_inicio_viaje: '06:45',
         hora_llegada_estimada: '08:00',
         fecha_viaje: '',
+        fecha_fin: '',
         notas: '',
-        capacidad_maxima: 30
-      }
+        capacidad_maxima: null,
+        dias_semana: [],
+        confirmacion_automatica: false,
+        crear_retorno: false,
+        hora_inicio_confirmacion_retorno: '',
+        hora_fin_confirmacion_retorno: '',
+        hora_inicio_retorno: '',
+        hora_llegada_retorno: ''
+      },
+      esViajeRecurrente: false,
+      diasSemana: [
+        { label: 'Lun', value: 1 },
+        { label: 'Mar', value: 2 },
+        { label: 'Mié', value: 3 },
+        { label: 'Jue', value: 4 },
+        { label: 'Vie', value: 5 },
+        { label: 'Sáb', value: 6 },
+        { label: 'Dom', value: 0 }
+      ]
     };
   },
   computed: {
     today() {
       return new Date().toISOString().split('T')[0];
+    },
+    selectedUnidadCapacidad() {
+      if (!this.formData.unidad_id) return null;
+      const unidad = this.unidades.find(u => u.id === this.formData.unidad_id);
+      return unidad?.numero_asientos || null;
+    }
+  },
+  watch: {
+    'formData.unidad_id'(newVal) {
+      if (newVal) {
+        const unidad = this.unidades.find(u => u.id === newVal);
+        if (unidad && unidad.numero_asientos) {
+          this.formData.capacidad_maxima = unidad.numero_asientos;
+        }
+      }
+    },
+    esViajeRecurrente(newVal) {
+      if (newVal) {
+        // Si es recurrente, establecer lunes a viernes automáticamente
+        this.formData.dias_semana = [1, 2, 3, 4, 5];
+      } else {
+        // Si no es recurrente, limpiar fecha_fin
+        this.formData.fecha_fin = '';
+      }
     }
   },
   mounted() {
@@ -400,14 +547,25 @@ export default {
         escuela_id: '',
         chofer_id: '',
         unidad_id: '',
+        turno: '',
+        tipo_viaje: 'ida',
         hora_inicio_confirmacion: '06:00',
         hora_fin_confirmacion: '06:30',
         hora_inicio_viaje: '06:45',
         hora_llegada_estimada: '08:00',
         fecha_viaje: '',
+        fecha_fin: '',
         notas: '',
-        capacidad_maxima: 30
+        capacidad_maxima: null,
+        dias_semana: [],
+        confirmacion_automatica: false,
+        crear_retorno: false,
+        hora_inicio_confirmacion_retorno: '',
+        hora_fin_confirmacion_retorno: '',
+        hora_inicio_retorno: '',
+        hora_llegada_retorno: ''
       };
+      this.esViajeRecurrente = false;
     },
     async submitForm() {
       this.loading = true;
@@ -598,6 +756,60 @@ th, td {
 
 .btn-icon:hover {
   background: #e9ecef;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.dias-semana {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.dia-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dia-checkbox:hover {
+  background: #f8f9fa;
+}
+
+.dia-checkbox input:checked + span {
+  font-weight: bold;
+}
+
+.retorno-section {
+  background: #f0f8ff;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #b3d9ff;
+  margin-top: 15px;
+}
+
+.retorno-section h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #0066cc;
 }
 
 .btn-success { background: #28a745; color: white; }
