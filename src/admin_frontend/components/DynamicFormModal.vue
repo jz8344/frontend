@@ -546,7 +546,13 @@ function initializeForm() {
       } else if (field.type === 'checkbox') {
         form[field.key] = field.defaultValue === true || field.defaultValue === 'true'
       } else {
-        form[field.key] = field.defaultValue || field.default || ''
+        const defaultVal = field.defaultValue || field.default || ''
+        form[field.key] = defaultVal
+        
+        // Debug para campos de tiempo
+        if (field.type === 'time' && defaultVal) {
+          console.log(`Inicializando ${field.key} con valor por defecto:`, defaultVal)
+        }
       }
     }
     
@@ -802,21 +808,19 @@ async function handleSubmit() {
           }
         }
         
+        // Si el valor está vacío pero hay defaultValue, usar el default
+        if ((!value || value === '') && field.defaultValue !== undefined) {
+          value = field.defaultValue
+        }
+        
         // Para campos tipo time, asegurar formato HH:MM:SS
         if (field.type === 'time' && value && value.length === 5) {
           value = value + ':00'
         }
         
-        // Solo enviar valores no vacíos, o valores requeridos con default
+        // Solo enviar valores no vacíos
         if (value !== null && value !== undefined && value !== '') {
           cleanedData[field.key] = value
-        } else if (field.required && field.defaultValue !== undefined) {
-          let defaultVal = field.defaultValue
-          // Agregar :00 a valores default de time si es necesario
-          if (field.type === 'time' && defaultVal && defaultVal.length === 5) {
-            defaultVal = defaultVal + ':00'
-          }
-          cleanedData[field.key] = defaultVal
         } else if (field.type === 'number' && value === '') {
           // Para números, no enviar strings vacíos
           return
@@ -825,6 +829,9 @@ async function handleSubmit() {
       
       dataToSend = cleanedData
     }
+    
+    // Debug: mostrar datos que se enviarán
+    console.log('Datos del formulario antes de enviar:', dataToSend)
     
     emit('save', dataToSend)
   } catch (err) {
