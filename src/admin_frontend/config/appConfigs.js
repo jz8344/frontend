@@ -808,12 +808,13 @@ export const appConfigs = {
         sortable: false
       },
       { 
-        key: 'estado_actual', 
-        label: 'Estado Actual',
+        key: 'estado', 
+        label: 'Estado',
         type: 'badge',
         sortable: true,
         getValue: (item) => {
-          const estado = item.estado_actual || item.estado
+          // Usar siempre el estado manual del admin
+          const estado = item.estado
           const badges = {
             'pendiente': { text: 'Pendiente', class: 'bg-warning text-dark' },
             'confirmaciones_abiertas': { text: 'Confirmaciones Abiertas', class: 'bg-success' },
@@ -998,6 +999,25 @@ export const appConfigs = {
         defaultValue: false,
         help: '✓ Crea automáticamente el viaje de regreso (Escuela → Casa). No requiere confirmación de padres.',
         visibleWhen: (formData) => !formData.id // Solo visible al crear
+      },
+      {
+        key: 'estado',
+        label: 'Estado del Viaje',
+        type: 'select',
+        required: false,
+        placeholder: 'Cambiar estado manualmente',
+        icon: 'bi bi-gear',
+        colClass: 'col-md-12',
+        options: [
+          { value: 'pendiente', label: '⏳ Pendiente' },
+          { value: 'confirmaciones_abiertas', label: '🟢 Confirmaciones Abiertas' },
+          { value: 'confirmaciones_cerradas', label: '🔒 Confirmaciones Cerradas' },
+          { value: 'en_curso', label: '🚌 En Curso' },
+          { value: 'completado', label: '✓ Completado' },
+          { value: 'cancelado', label: '❌ Cancelado' }
+        ],
+        help: 'Cambiar estado manualmente. Este estado se muestra en la app móvil.',
+        visibleWhen: (formData) => formData.id // Solo visible al editar
       },
       {
         key: 'notas',
