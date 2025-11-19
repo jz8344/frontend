@@ -254,6 +254,26 @@
                   :required="field.required"
                 />
                 
+                <!-- Checkbox Input -->
+                <div v-else-if="field.type === 'checkbox'" class="form-check">
+                  <input
+                    :id="`checkbox_${field.key}`"
+                    v-model="form[field.key]"
+                    type="checkbox"
+                    class="form-check-input"
+                    :class="{ 'is-invalid': errors[field.key] }"
+                    :true-value="true"
+                    :false-value="false"
+                  />
+                  <label 
+                    :for="`checkbox_${field.key}`" 
+                    class="form-check-label user-select-none"
+                    style="cursor: pointer;"
+                  >
+                    {{ field.label }}
+                  </label>
+                </div>
+                
                 <!-- File Input -->
                 <div v-else-if="field.type === 'file'" class="file-input-container">
                   <input
@@ -514,13 +534,17 @@ function initializeForm() {
       // Para multiselect, asegurar que sea array
       if (field.type === 'multiselect') {
         form[field.key] = Array.isArray(value) ? value : (value ? JSON.parse(value) : [])
+      } else if (field.type === 'checkbox') {
+        form[field.key] = value === true || value === 1 || value === '1'
       } else {
-        form[field.key] = value || field.default || field.defaultValue || ''
+        form[field.key] = value !== undefined && value !== null ? value : (field.default || field.defaultValue || '')
       }
     } else {
       // Modo creación: valores por defecto
       if (field.type === 'multiselect') {
         form[field.key] = []
+      } else if (field.type === 'checkbox') {
+        form[field.key] = field.defaultValue === true || field.defaultValue === 'true'
       } else {
         form[field.key] = field.defaultValue || field.default || ''
       }
@@ -558,9 +582,11 @@ async function loadFieldOptions(field) {
       // Obtener opciones de datos relacionados
       options = props.relatedData[field.relatedKey].map(item => ({
         value: item.id,
-        label: field.relatedLabel ? 
-          field.relatedLabel.split('.').reduce((obj, key) => obj?.[key], item) :
-          `${item.nombre || item.name || ''} ${item.apellidos || item.lastname || ''}`.trim()
+        label: field.relatedFormat ? 
+          field.relatedFormat(item) :
+          field.relatedLabel ? 
+            field.relatedLabel.split('.').reduce((obj, key) => obj?.[key], item) :
+            `${item.nombre || item.name || ''} ${item.apellidos || item.lastname || ''}`.trim()
       }))
     }
     
@@ -999,6 +1025,20 @@ watch(() => form.municipio, (newMunicipio, oldMunicipio) => {
     
     // Recargar opciones de colonias
     reloadDependentFields('municipio')
+  }
+})
+
+// Watcher para unidad_id - actualizar capacidad automáticamente (solo para viajes)
+watch(() => form.unidad_id, (newUnidadId) => {
+  if (newUnidadId && props.config.name === 'Viajes') {
+    // Buscar la unidad seleccionada en relatedData
+    const unidades = props.relatedData?.unidades || []
+    const unidadSeleccionada = unidades.find(u => u.id === parseInt(newUnidadId))
+    
+    if (unidadSeleccionada && unidadSeleccionada.numero_asientos) {
+      form.capacidad_maxima = parseInt(unidadSeleccionada.numero_asientos)
+      console.log('Capacidad actualizada:', form.capacidad_maxima, 'desde unidad:', unidadSeleccionada.numero_unidad)
+    }
   }
 })
 

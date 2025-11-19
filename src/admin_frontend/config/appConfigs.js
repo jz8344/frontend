@@ -855,8 +855,38 @@ export const appConfigs = {
         icon: 'bi bi-bus-front',
         colClass: 'col-md-6',
         relatedKey: 'unidades',
-        relatedLabel: 'matricula',
-        getValue: (item) => `${item.matricula} - ${item.modelo || item.marca || ''}`
+        relatedLabel: 'numero_unidad',
+        relatedFormat: (item) => `${item.numero_unidad} - ${item.modelo || item.marca || ''}`
+      },
+      {
+        key: 'turno',
+        label: 'Turno',
+        type: 'select',
+        required: true,
+        placeholder: 'Seleccionar turno',
+        icon: 'bi bi-sun',
+        colClass: 'col-md-6',
+        options: [
+          { value: 'matutino', label: '☀️ Matutino (Mañana)' },
+          { value: 'vespertino', label: '🌙 Vespertino (Tarde)' }
+        ]
+      },
+      {
+        key: 'tipo_viaje',
+        label: 'Tipo de Viaje',
+        type: 'select',
+        required: false,
+        placeholder: 'Tipo de viaje',
+        icon: 'bi bi-arrow-left-right',
+        colClass: 'col-md-6',
+        defaultValue: 'ida',
+        disabled: true,
+        readonly: true,
+        options: [
+          { value: 'ida', label: 'Ida (Casa → Escuela)' },
+          { value: 'retorno', label: 'Retorno (Escuela → Casa)' }
+        ],
+        help: 'Los viajes de retorno se crean automáticamente'
       },
       {
         key: 'fecha_viaje',
@@ -873,12 +903,12 @@ export const appConfigs = {
         label: 'Capacidad Máxima',
         type: 'number',
         required: false,
-        placeholder: '30',
+        placeholder: 'Se obtiene de la unidad',
         icon: 'bi bi-people',
         colClass: 'col-md-6',
         min: 1,
         max: 100,
-        defaultValue: 30
+        help: 'Se completa automáticamente al seleccionar unidad'
       },
       {
         key: 'hora_inicio_confirmacion',
@@ -923,6 +953,104 @@ export const appConfigs = {
         colClass: 'col-md-6',
         defaultValue: '08:00',
         help: 'Hora estimada de llegada a la escuela'
+      },
+      {
+        key: 'dias_semana',
+        label: 'Días de la Semana',
+        type: 'multiselect',
+        required: false,
+        placeholder: 'Seleccionar días (opcional)',
+        icon: 'bi bi-calendar-week',
+        colClass: 'col-md-12',
+        options: [
+          { value: 1, label: 'Lunes' },
+          { value: 2, label: 'Martes' },
+          { value: 3, label: 'Miércoles' },
+          { value: 4, label: 'Jueves' },
+          { value: 5, label: 'Viernes' },
+          { value: 6, label: 'Sábado' },
+          { value: 0, label: 'Domingo' }
+        ],
+        help: 'Días en que se realiza este viaje (deja vacío para viaje único)'
+      },
+      {
+        key: 'fecha_fin',
+        label: 'Fecha de Finalización',
+        type: 'date',
+        required: false,
+        placeholder: 'Para viajes recurrentes',
+        icon: 'bi bi-calendar-x',
+        colClass: 'col-md-6',
+        help: 'Fecha hasta la que se repite el viaje'
+      },
+      {
+        key: 'confirmacion_automatica',
+        label: 'Confirmación Automática',
+        type: 'checkbox',
+        required: false,
+        icon: 'bi bi-check-circle',
+        colClass: 'col-md-6',
+        defaultValue: false,
+        help: 'Usar ubicación guardada del niño automáticamente'
+      },
+      {
+        key: 'crear_retorno',
+        label: 'Crear Viaje de Retorno',
+        type: 'checkbox',
+        required: false,
+        icon: 'bi bi-arrow-left',
+        colClass: 'col-md-12',
+        defaultValue: false,
+        help: 'Crear automáticamente viaje de retorno (solo aplica en modo creación)',
+        visibleWhen: (formData) => !formData.id // Solo visible al crear
+      },
+      {
+        key: 'hora_inicio_confirmacion_retorno',
+        label: 'Inicio Confirmación (Retorno)',
+        type: 'time',
+        required: false,
+        placeholder: '12:00',
+        icon: 'bi bi-clock',
+        colClass: 'col-md-6',
+        dependsOn: 'crear_retorno',
+        visibleWhen: (formData) => formData.crear_retorno === true,
+        help: 'Hora de inicio confirmación del viaje de retorno'
+      },
+      {
+        key: 'hora_fin_confirmacion_retorno',
+        label: 'Fin Confirmación (Retorno)',
+        type: 'time',
+        required: false,
+        placeholder: '12:30',
+        icon: 'bi bi-clock-fill',
+        colClass: 'col-md-6',
+        dependsOn: 'crear_retorno',
+        visibleWhen: (formData) => formData.crear_retorno === true,
+        help: 'Hora de cierre confirmación del viaje de retorno'
+      },
+      {
+        key: 'hora_inicio_retorno',
+        label: 'Inicio Viaje (Retorno)',
+        type: 'time',
+        required: false,
+        placeholder: '13:00',
+        icon: 'bi bi-play-circle',
+        colClass: 'col-md-6',
+        dependsOn: 'crear_retorno',
+        visibleWhen: (formData) => formData.crear_retorno === true,
+        help: 'Hora en que inicia el viaje de retorno'
+      },
+      {
+        key: 'hora_llegada_retorno',
+        label: 'Llegada (Retorno)',
+        type: 'time',
+        required: false,
+        placeholder: '15:00',
+        icon: 'bi bi-flag-fill',
+        colClass: 'col-md-6',
+        dependsOn: 'crear_retorno',
+        visibleWhen: (formData) => formData.crear_retorno === true,
+        help: 'Hora estimada de llegada del retorno'
       },
       {
         key: 'notas',
