@@ -798,6 +798,15 @@ async function handleSubmit() {
       props.config.fields.forEach(field => {
         let value = form[field.key]
         
+        // Debug para campos de hora
+        if (field.type === 'time') {
+          console.log(`Campo ${field.key}:`, {
+            valorEnForm: value,
+            tieneDefaultValue: field.defaultValue !== undefined,
+            defaultValue: field.defaultValue
+          })
+        }
+        
         // Para modo edición, no enviar contraseñas vacías ni archivos sin cambios
         if (props.isEditing) {
           if (field.type === 'password' && (!value || value.trim() === '')) {
@@ -810,10 +819,11 @@ async function handleSubmit() {
         
         // Si el valor está vacío pero hay defaultValue, usar el default
         if ((!value || value === '') && field.defaultValue !== undefined) {
+          console.log(`Usando defaultValue para ${field.key}:`, field.defaultValue)
           value = field.defaultValue
         }
         
-        // Para campos tipo time, asegurar formato HH:MM:SS
+        // Para campos tipo time, asegurar formato HH:MM
         if (field.type === 'time' && value && value.length === 5) {
           value = value + ':00'
         }
@@ -830,8 +840,9 @@ async function handleSubmit() {
       dataToSend = cleanedData
     }
     
-    // Debug: mostrar datos que se enviarán
+    // Debug: mostrar datos que se enviarán (con stringify para ver todo)
     console.log('Datos del formulario antes de enviar:', dataToSend)
+    console.log('Datos completos JSON:', JSON.stringify(dataToSend, null, 2))
     
     emit('save', dataToSend)
   } catch (err) {
