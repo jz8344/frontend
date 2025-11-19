@@ -752,13 +752,23 @@ export const appConfigs = {
         label: 'Fecha',
         type: 'date',
         icon: 'bi bi-calendar',
-        sortable: true
+        sortable: true,
+        getValue: (item) => {
+          if (!item.fecha_viaje && item.es_recurrente) {
+            return '🔄 Recurrente'
+          }
+          return item.fecha_viaje || '-'
+        }
       },
       { 
         key: 'nombre_ruta', 
         label: 'Nombre Ruta',
         icon: 'bi bi-signpost',
-        sortable: true
+        sortable: true,
+        getValue: (item) => {
+          const prefix = item.es_recurrente ? '🔄 ' : ''
+          return prefix + (item.nombre_ruta || '-')
+        }
       },
       { 
         key: 'escuela.nombre', 
@@ -768,17 +778,19 @@ export const appConfigs = {
         sortable: false
       },
       { 
+        key: 'turno',
+        label: 'Turno',
+        icon: 'bi bi-sun-fill',
+        sortable: true,
+        getValue: (item) => {
+          return item.turno === 'matutino' ? '☀️ Matutino' : '🌙 Vespertino'
+        }
+      },
+      { 
         key: 'chofer', 
         label: 'Chofer',
         icon: 'bi bi-person-badge',
         getValue: (item) => item.chofer ? `${item.chofer.nombre} ${item.chofer.apellidos}` : 'Sin asignar',
-        sortable: false
-      },
-      { 
-        key: 'unidad.numero_unidad', 
-        label: 'Unidad',
-        icon: 'bi bi-bus-front',
-        getValue: (item) => item.unidad?.numero_unidad || 'Sin asignar',
         sortable: false
       },
       { 
@@ -796,11 +808,12 @@ export const appConfigs = {
         sortable: false
       },
       { 
-        key: 'estado', 
-        label: 'Estado',
+        key: 'estado_actual', 
+        label: 'Estado Actual',
         type: 'badge',
         sortable: true,
         getValue: (item) => {
+          const estado = item.estado_actual || item.estado
           const badges = {
             'pendiente': { text: 'Pendiente', class: 'bg-warning text-dark' },
             'confirmaciones_abiertas': { text: 'Confirmaciones Abiertas', class: 'bg-success' },
@@ -809,7 +822,7 @@ export const appConfigs = {
             'completado': { text: 'Completado', class: 'bg-secondary' },
             'cancelado': { text: 'Cancelado', class: 'bg-danger' }
           }
-          return badges[item.estado] || { text: item.estado, class: 'bg-secondary' }
+          return badges[estado] || { text: estado, class: 'bg-secondary' }
         }
       }
     ],
@@ -1004,12 +1017,24 @@ export const appConfigs = {
     canView: true,
     customActions: [
       {
+        name: 'activar-hoy',
+        label: '🚀 Activar para Hoy',
+        icon: 'bi bi-calendar-check',
+        type: 'primary',
+        itemAction: true,
+        visibleWhen: (item) => item.puede_activar_hoy === true,
+        endpoint: (id) => `/admin/viajes/${id}/activar-hoy`,
+        method: 'POST',
+        successMessage: 'Viaje activado para hoy exitosamente',
+        confirmMessage: '¿Activar este viaje recurrente para el día de hoy?'
+      },
+      {
         name: 'abrir-confirmaciones',
         label: 'Abrir Confirmaciones',
         icon: 'bi bi-unlock',
         type: 'success',
         itemAction: true,
-        visibleWhen: (item) => item.estado === 'pendiente',
+        visibleWhen: (item) => item.estado === 'pendiente' && item.fecha_viaje,
         endpoint: (id) => `/admin/viajes/${id}/abrir-confirmaciones`,
         method: 'POST',
         successMessage: 'Periodo de confirmaciones abierto'

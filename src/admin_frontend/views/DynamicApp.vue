@@ -195,8 +195,9 @@ async function handleCustomAction({ action, item }) {
       return
     }
     
-    // Confirmar acción si es necesaria
-    if (!confirm(`¿Está seguro de que desea ${action.label.toLowerCase()}?`)) {
+    // Confirmar acción si es necesaria (usar mensaje personalizado o por defecto)
+    const confirmMessage = action.confirmMessage || `¿Está seguro de que desea ${action.label.toLowerCase()}?`
+    if (!confirm(confirmMessage)) {
       return
     }
     
