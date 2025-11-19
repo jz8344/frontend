@@ -1035,9 +1035,12 @@ watch(() => form.unidad_id, (newUnidadId) => {
     const unidades = props.relatedData?.unidades || []
     const unidadSeleccionada = unidades.find(u => u.id === parseInt(newUnidadId))
     
-    if (unidadSeleccionada && unidadSeleccionada.numero_asientos) {
-      form.capacidad_maxima = parseInt(unidadSeleccionada.numero_asientos)
-      console.log('Capacidad actualizada:', form.capacidad_maxima, 'desde unidad:', unidadSeleccionada.numero_unidad)
+    console.log('Unidad seleccionada:', unidadSeleccionada)
+    
+    // Buscar en capacidad (campo correcto en DB)
+    if (unidadSeleccionada && unidadSeleccionada.capacidad) {
+      form.capacidad_maxima = parseInt(unidadSeleccionada.capacidad)
+      console.log('Capacidad actualizada:', form.capacidad_maxima, 'desde unidad:', unidadSeleccionada.numero_unidad || unidadSeleccionada.matricula)
     }
   }
 })
