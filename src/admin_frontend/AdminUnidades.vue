@@ -2,9 +2,38 @@
   <div class="container py-4">
     <h2 class="mb-3">Unidades</h2>
     <form @submit.prevent="guardar" class="row g-2 mb-3">
-      <div class="col-md-3"><input v-model="form.matricula" class="form-control" placeholder="Matrícula" required /></div>
-      <div class="col-md-3"><input v-model="form.modelo" class="form-control" placeholder="Modelo" /></div>
-      <div class="col-md-2"><input v-model.number="form.capacidad" type="number" min="1" class="form-control" placeholder="Capacidad" required /></div>
+      <div class="col-md-3">
+        <input 
+          v-model="form.matricula" 
+          @input="form.matricula = $event.target.value.toUpperCase()"
+          class="form-control" 
+          placeholder="Matrícula (MAY)" 
+          pattern="[A-Z0-9\-]+"
+          title="Solo letras mayúsculas, números y guiones"
+          maxlength="15"
+          required 
+        />
+      </div>
+      <div class="col-md-3">
+        <input 
+          v-model="form.modelo" 
+          @input="form.modelo = $event.target.value.toUpperCase()"
+          class="form-control" 
+          placeholder="Modelo (MAY)" 
+          maxlength="50"
+        />
+      </div>
+      <div class="col-md-2">
+        <input 
+          v-model.number="form.capacidad" 
+          type="number" 
+          min="1" 
+          max="100"
+          class="form-control" 
+          placeholder="Capacidad" 
+          required 
+        />
+      </div>
       <div class="col-md-4">
         <button class="btn btn-primary">{{ form.id? 'Actualizar':'Agregar' }}</button>
         <button type="button" v-if="form.id" class="btn btn-secondary ms-2" @click="reset">Cancelar</button>

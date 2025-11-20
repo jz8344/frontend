@@ -387,6 +387,9 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { API_BASE_URL } from '@/config/api'
+import { useNotifications } from '@/composables/useNotifications'
+
+const { notifyCreated, notifyDeleted } = useNotifications()
 
 // Estado
 const loading = ref(false)
@@ -486,6 +489,7 @@ async function createBackup() {
 
     if (response.ok) {
       showAlert('success', 'check-circle', data.message || 'Backup creado exitosamente')
+      notifyCreated('respaldo', data.nombre || `Backup ${backupForm.tipo}`)
       closeCreateModal()
       loadBackups()
     } else {
@@ -523,6 +527,7 @@ async function deleteBackup() {
 
     if (response.ok) {
       showAlert('success', 'check-circle', data.message || 'Backup eliminado exitosamente')
+      notifyDeleted('respaldo', deleteModal.backup.nombre)
       deleteModal.show = false
       loadBackups()
     } else {

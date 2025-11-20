@@ -54,16 +54,22 @@ export const appConfigs = {
         required: true,
         placeholder: 'usuario@ejemplo.com',
         icon: 'bi bi-envelope',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        autoFormat: 'lowercase'
       },
       {
         key: 'telefono',
         label: 'Teléfono',
         type: 'tel',
         required: false,
-        placeholder: '+52 123 456 7890',
+        placeholder: '10 dígitos',
         icon: 'bi bi-phone',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        pattern: '^[0-9]{10}$',
+        validationMessage: 'Debe contener exactamente 10 dígitos',
+        minlength: 10,
+        maxlength: 10,
+        autoFormat: 'number'
       },
       {
         key: 'contrasena',
@@ -163,7 +169,8 @@ export const appConfigs = {
         maxlength: 50,
         readonly: true,
         editMode: 'readonly',
-        helpText: 'El código QR no puede modificarse una vez creado'
+        helpText: 'El código QR no puede modificarse una vez creado',
+        autoFormat: 'uppercase'
       },
       {
         key: 'padre_id',
@@ -249,7 +256,8 @@ export const appConfigs = {
         colClass: 'col-md-6',
         pattern: '^[A-Z0-9]+$',
         validationMessage: 'Solo letras mayúsculas y números',
-        maxlength: 20
+        maxlength: 20,
+        autoFormat: 'uppercase'
       },
       {
         key: 'curp',
@@ -262,7 +270,8 @@ export const appConfigs = {
         pattern: '^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9]{2}$',
         validationMessage: 'Formato CURP inválido',
         minlength: 18,
-        maxlength: 18
+        maxlength: 18,
+        autoFormat: 'uppercase'
       },
       {
         key: 'telefono',
@@ -275,7 +284,8 @@ export const appConfigs = {
         pattern: '^[0-9]{10}$',
         validationMessage: 'Debe contener exactamente 10 dígitos',
         minlength: 10,
-        maxlength: 10
+        maxlength: 10,
+        autoFormat: 'number'
       },
       {
         key: 'correo',
@@ -284,7 +294,8 @@ export const appConfigs = {
         required: false,
         placeholder: 'chofer@ejemplo.com',
         icon: 'bi bi-envelope',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        autoFormat: 'lowercase'
       },
       {
         key: 'estado',
@@ -339,7 +350,8 @@ export const appConfigs = {
         colClass: 'col-md-4',
         pattern: '^[A-Z0-9\\-]+$',
         validationMessage: 'Solo letras mayúsculas, números y guiones',
-        maxlength: 15
+        maxlength: 15,
+        autoFormat: 'uppercase'
       },
       {
         key: 'descripcion',
@@ -370,8 +382,9 @@ export const appConfigs = {
         placeholder: 'Alfanumérico',
         icon: 'bi bi-gear',
         colClass: 'col-md-4',
-        pattern: '^[a-zA-Z0-9\\s\\-]+$',
-        validationMessage: 'Solo letras, números, espacios y guiones'
+        pattern: '^[A-Z0-9\\s\\-]+$',
+        validationMessage: 'Solo letras mayúsculas, números, espacios y guiones',
+        autoFormat: 'uppercase'
       },
       {
         key: 'anio',
@@ -411,9 +424,13 @@ export const appConfigs = {
         label: 'Número de Serie',
         type: 'text',
         required: false,
-        placeholder: 'Número de serie del vehículo',
+        placeholder: 'Alfanumérico sin espacios',
         icon: 'bi bi-123',
-        colClass: 'col-md-4'
+        colClass: 'col-md-4',
+        pattern: '^[A-Z0-9\\-]+$',
+        validationMessage: 'Solo letras mayúsculas, números y guiones',
+        maxlength: 30,
+        autoFormat: 'uppercase'
       },
       {
         key: 'imagen',
@@ -513,12 +530,13 @@ export const appConfigs = {
         label: 'Clave (CCT/Código)',
         type: 'text',
         required: false,
-        placeholder: 'Solo números',
+        placeholder: 'Alfanumérico',
         icon: 'bi bi-tag',
         colClass: 'col-md-4',
-        pattern: '^[0-9]+$',
-        validationMessage: 'Solo se permiten números',
-        maxlength: 20
+        pattern: '^[A-Z0-9]+$',
+        validationMessage: 'Solo letras mayúsculas y números',
+        maxlength: 20,
+        autoFormat: 'uppercase'
       },
       {
         key: 'nivel',
@@ -555,13 +573,14 @@ export const appConfigs = {
       {
         key: 'direccion',
         label: 'Dirección',
-        type: 'textarea',
+        type: 'address-map',
         required: true,
-        placeholder: 'Calle, número, referencias (letras, números y símbolos #/-)',
+        placeholder: 'Ingresa la dirección o haz clic en "📍 Ubicar en Mapa"',
         icon: 'bi bi-geo-alt',
         colClass: 'col-md-12',
         pattern: '^[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\\s.,#°/\\-]+$',
-        validationMessage: 'Solo letras, números y símbolos de dirección (#, /, -, .)'
+        validationMessage: 'Solo letras, números y símbolos de dirección (#, /, -, .)',
+        rows: 3
       },
       {
         key: 'ciudad',
@@ -628,7 +647,8 @@ export const appConfigs = {
         pattern: '^[0-9]{5}$',
         validationMessage: 'Debe contener exactamente 5 dígitos',
         minlength: 5,
-        maxlength: 5
+        maxlength: 5,
+        autoFormat: 'number'
       },
       {
         key: 'telefono',
@@ -641,7 +661,8 @@ export const appConfigs = {
         pattern: '^[0-9]{10}$',
         validationMessage: 'Debe contener exactamente 10 dígitos',
         minlength: 10,
-        maxlength: 10
+        maxlength: 10,
+        autoFormat: 'number'
       },
       {
         key: 'correo',
@@ -650,7 +671,8 @@ export const appConfigs = {
         required: false,
         placeholder: 'contacto@escuela.edu.mx',
         icon: 'bi bi-envelope',
-        colClass: 'col-md-6'
+        colClass: 'col-md-6',
+        autoFormat: 'lowercase'
       },
       {
         key: 'contacto',

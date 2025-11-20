@@ -401,9 +401,14 @@
 
 <script>
 import axios from 'axios';
+import { useNotifications } from '@/composables/useNotifications';
 
 export default {
   name: 'AdminViajes',
+  setup() {
+    const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications();
+    return { notifyCreated, notifyUpdated, notifyDeleted };
+  },
   data() {
     return {
       viajes: [],
@@ -644,10 +649,12 @@ export default {
           const response = await axios.post('/api/admin/viajes', dataToSend);
           console.log('Create response:', response.data);
           this.$toast?.success('Viaje creado exitosamente');
+          this.notifyCreated('viaje', dataToSend.nombre_ruta);
         } else {
           const response = await axios.put(`/api/admin/viajes/${dataToSend.id}`, dataToSend);
           console.log('Update response:', response.data);
           this.$toast?.success('Viaje actualizado exitosamente');
+          this.notifyUpdated('viaje', dataToSend.nombre_ruta);
         }
         this.closeModal();
         this.loadViajes();
@@ -669,11 +676,15 @@ export default {
       }
     },
     async deleteViaje(id) {
+      const viaje = this.viajes.find(v => v.id === id);
+      const nombreViaje = viaje?.nombre_ruta || `ID ${id}`;
+      
       if (!confirm('¿Está seguro de eliminar este viaje?')) return;
 
       try {
         await axios.delete(`/api/admin/viajes/${id}`);
         this.$toast?.success('Viaje eliminado exitosamente');
+        this.notifyDeleted('viaje', nombreViaje);
         this.loadViajes();
       } catch (error) {
         console.error('Error al eliminar viaje:', error);

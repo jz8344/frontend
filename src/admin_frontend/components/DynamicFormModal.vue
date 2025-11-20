@@ -986,6 +986,21 @@ function handleNumberPaste(event, fieldKey) {
 function applyAutoFormat(field, value) {
   if (!value) return value
   
+  // Priorizar autoFormat explícito del campo
+  if (field.autoFormat) {
+    switch (field.autoFormat) {
+      case 'uppercase':
+        return String(value).toUpperCase()
+      case 'lowercase':
+        return String(value).toLowerCase()
+      case 'number':
+        return String(value).replace(/\s+/g, '')
+      default:
+        break
+    }
+  }
+  
+  // Fallback: detección automática por keywords
   const fieldKey = field.key.toLowerCase()
   const fieldLabel = field.label?.toLowerCase() || ''
   
