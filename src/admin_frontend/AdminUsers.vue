@@ -4,6 +4,7 @@
     page-description="Administra los usuarios del sistema"
     :loading="loading"
     :loading-message="'Cargando usuarios...'"
+    :notification-count="unreadCount"
     @search="handleSearch"
     @showNotifications="handleNotifications"
     @showHistory="handleHistory"

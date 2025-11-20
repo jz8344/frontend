@@ -3,6 +3,7 @@
     page-title="Gestión de Choferes"
     page-description="Administra los conductores del sistema"
     :loading="loading"
+    :notification-count="unreadCount"
     @search="handleSearch"
     @showNotifications="handleNotifications"
     @showHistory="handleHistory"

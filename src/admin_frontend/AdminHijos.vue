@@ -3,6 +3,7 @@
     page-title="Gestión de Hijos"
     page-description="Administra los estudiantes del sistema"
     :loading="loading"
+    :notification-count="unreadCount"
     @search="handleSearch"
     @showNotifications="handleNotifications"
     @showHistory="handleHistory"
