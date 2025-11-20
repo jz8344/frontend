@@ -273,7 +273,7 @@ function closeModal() {
 
 function handleSave(data) {
   if (isEditing.value) {
-    emit('update', { id: editingItem.value.id, data })
+    emit('update', { id: editingItem.value.id, data, oldData: editingItem.value })
   } else {
     emit('create', data)
   }

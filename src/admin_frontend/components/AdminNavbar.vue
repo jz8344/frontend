@@ -255,7 +255,7 @@ const { unreadCount, recentNotifications } = useNotifications()
 const showNotificationsPanel = ref(false)
 
 // Emits
-const emit = defineEmits(['search', 'showHistory', 'logout'])
+const emit = defineEmits(['search', 'showHistory', 'logout', 'showNotifications'])
 
 const router = useRouter()
 const route = useRoute()

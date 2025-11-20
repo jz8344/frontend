@@ -10,7 +10,7 @@
     :loading="loading"
     :related-data="relatedData"
     :user-name="userName"
-    :notification-count="notificationCount"
+    :notification-count="unreadCount"
     @search="handleSearch"
     @sort="handleSort"
     @create="handleCreate"
@@ -59,6 +59,7 @@ import DynamicListView from '../components/DynamicListView.vue'
 import BackupApp from './BackupApp.vue'
 import { useDynamicApp } from '@/composables/useDynamicApp.js'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
+import { useNotifications } from '@/composables/useNotifications.js'
 import http from '@/config/api.js'
 
 // Definir props (para evitar warnings de Vue Router)
@@ -72,6 +73,7 @@ const props = defineProps({
 const route = useRoute()
 const router = useRouter()
 const { adminName, setupAxiosInterceptors } = useAdminAuth()
+const { notifyCreated, notifyUpdated, notifyDeleted, notifications, unreadCount } = useNotifications()
 
 // Obtener el nombre de la app desde la ruta o props
 const appName = computed(() => props.app || route.params.app)
@@ -102,7 +104,6 @@ const alerts = ref([])
 const sortField = ref('')
 const sortDirection = ref('asc')
 const userName = computed(() => adminName.value || 'Admin')
-const notificationCount = ref(0)
 
 // Métodos de manejo de eventos
 async function handleCreate(data) {
@@ -110,16 +111,46 @@ async function handleCreate(data) {
   
   if (result.success) {
     showAlert(`${config.singular} creado exitosamente`, 'success')
+    // Generar notificación en el panel
+    const entityName = data.nombre || data.matricula || data.correo || `Nuevo ${config.singular}`
+    notifyCreated(appName.value, entityName)
   } else {
     showAlert(result.error, 'danger')
   }
 }
 
-async function handleUpdate({ id, data }) {
+async function handleUpdate({ id, data, oldData }) {
   const result = await updateItem(id, data)
   
   if (result.success) {
     showAlert(`${config.singular} actualizado exitosamente`, 'success')
+    // Generar notificación en el panel con detalles de cambios
+    const entityName = data.nombre || data.matricula || data.correo || `ID ${id}`
+    
+    // Detectar campos cambiados
+    const changes = []
+    if (oldData) {
+      Object.keys(data).forEach(key => {
+        if (oldData[key] !== data[key] && key !== 'id' && key !== 'updated_at') {
+          const fieldLabels = {
+            nombre: 'Nombre',
+            correo: 'Correo',
+            telefono: 'Teléfono',
+            matricula: 'Matrícula',
+            modelo: 'Modelo',
+            marca: 'Marca',
+            color: 'Color',
+            direccion: 'Dirección',
+            ciudad: 'Ciudad',
+            estado: 'Estado'
+          }
+          const label = fieldLabels[key] || key
+          changes.push(label)
+        }
+      })
+    }
+    
+    notifyUpdated(appName.value, entityName, changes)
   } else {
     showAlert(result.error, 'danger')
   }
@@ -140,6 +171,10 @@ async function handleDelete(id) {
   
   if (result.success) {
     showAlert(`${config.singular} eliminado exitosamente`, 'success')
+    // Generar notificación en el panel
+    const item = items.value.find(i => i.id === id)
+    const entityName = item?.nombre || item?.matricula || item?.correo || `ID ${id}`
+    notifyDeleted(appName.value, entityName)
   } else {
     showAlert(result.error, 'danger')
   }

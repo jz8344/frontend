@@ -25,6 +25,16 @@ export function useNotifications() {
 
     notifications.value.unshift(notification)
     unreadCount.value++
+    
+    // DEBUG: Log para verificar que se está agregando
+    console.log('🔔 Notificación agregada:', {
+      title,
+      message,
+      type,
+      entityType,
+      total: notifications.value.length,
+      unreadCount: unreadCount.value
+    })
 
     // Solo auto-eliminar si se especifica explícitamente
     // Las notificaciones del panel NO se auto-eliminan
@@ -72,7 +82,10 @@ export function useNotifications() {
     let message = `${adminName.value || 'Admin'} ha actualizado: ${entityName}`
     
     if (changes.length > 0) {
-      message += ` (${changes.join(', ')})`
+      const changesText = changes.length === 1 
+        ? `Campo modificado: ${changes[0]}`
+        : `Campos modificados: ${changes.join(', ')}`
+      message += `\n${changesText}`
     }
 
     return addNotification(
