@@ -49,10 +49,12 @@ import { ref, computed, onMounted } from 'vue'
 import DynamicAppLayout from './layouts/DynamicAppLayout.vue'
 import DynamicListView from './components/DynamicListView.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
+import { useNotifications } from '@/composables/useNotifications.js'
 import { getAppConfig } from './config/appConfigs.js'
 import http from '@/config/api.js'
 
 const { adminName, setupAxiosInterceptors } = useAdminAuth()
+const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
 
 // Configuración de la app
 const config = getAppConfig('escuelas')
@@ -135,6 +137,8 @@ async function handleCreate(data) {
     
     if (response.data) {
       escuelas.value.push(response.data)
+      // Generar notificación
+      notifyCreated('escuela', response.data.nombre || 'Nueva escuela')
     }
     
     await loadItems()
@@ -156,6 +160,8 @@ async function handleUpdate({ id, data }) {
     const index = escuelas.value.findIndex(item => item.id === id)
     if (index >= 0 && response.data) {
       escuelas.value[index] = response.data
+      // Generar notificación
+      notifyUpdated('escuela', response.data.nombre || 'Escuela', [])
     }
     
     await loadItems()
@@ -171,11 +177,15 @@ async function handleUpdate({ id, data }) {
 
 async function handleDelete(id) {
   try {
+    const index = escuelas.value.findIndex(item => item.id === id)
+    const nombreEscuela = index >= 0 ? escuelas.value[index].nombre : 'Escuela'
+    
     await http.delete(`/admin/escuelas/${id}`)
     
-    const index = escuelas.value.findIndex(item => item.id === id)
     if (index >= 0) {
       escuelas.value.splice(index, 1)
+      // Generar notificación
+      notifyDeleted('escuela', nombreEscuela)
     }
     
     showAlert('Escuela eliminada exitosamente', 'success')

@@ -57,6 +57,7 @@
                   :min="field.min"
                   :max="field.max"
                   :required="field.required"
+                  @paste="handleNumberPaste($event, field.key)"
                 />
                 
                 <!-- Password Input -->
@@ -234,6 +235,33 @@
                   @input="validateField(field, $event)"
                 ></textarea>
                 
+                <!-- Address with Google Maps -->
+                <div v-else-if="field.type === 'address-map'">
+                  <textarea
+                    v-model="form[field.key]"
+                    class="form-control mb-2"
+                    :class="{ 'is-invalid': errors[field.key] }"
+                    :placeholder="field.placeholder || 'Ingresa o selecciona una dirección en el mapa'"
+                    :rows="field.rows || 2"
+                    :required="field.required"
+                    @input="validateField(field, $event)"
+                  ></textarea>
+                  
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-primary btn-sm mb-2 w-100"
+                    @click="openMapModal(field.key)"
+                  >
+                    <i class="bi bi-geo-alt-fill me-1"></i>
+                    Seleccionar ubicación en el mapa
+                  </button>
+                  
+                  <div v-if="form[field.key + '_coordinates']" class="small text-muted">
+                    <i class="bi bi-pin-map me-1"></i>
+                    Coordenadas: {{ form[field.key + '_coordinates'] }}
+                  </div>
+                </div>
+                
                 <!-- Date Input -->
                 <input
                   v-else-if="field.type === 'date'"
@@ -243,6 +271,24 @@
                   :class="{ 'is-invalid': errors[field.key] }"
                   :required="field.required"
                 />
+                
+                <!-- Year Input (Dropdown) -->
+                <select
+                  v-else-if="field.type === 'year'"
+                  v-model.number="form[field.key]"
+                  class="form-select"
+                  :class="{ 'is-invalid': errors[field.key] }"
+                  :required="field.required"
+                >
+                  <option value="" disabled>Selecciona un año</option>
+                  <option 
+                    v-for="year in generateYearOptions(field)" 
+                    :key="year" 
+                    :value="year"
+                  >
+                    {{ year }}
+                  </option>
+                </select>
                 
                 <!-- Time Input -->
                 <input
@@ -445,6 +491,73 @@
       </div>
     </div>
   </div>
+  
+  <!-- Modal de Mapa de Google -->
+  <div 
+    v-if="showMapModal" 
+    class="modal d-block" 
+    tabindex="-1" 
+    style="background: rgba(0,0,0,0.7); z-index: 1060;"
+  >
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="bi bi-geo-alt-fill me-2"></i>
+            Seleccionar Ubicación
+          </h5>
+          <button type="button" class="btn-close" @click="closeMapModal"></button>
+        </div>
+        <div class="modal-body p-0">
+          <div 
+            id="google-map-container" 
+            style="width: 100%; height: 500px;"
+          ></div>
+          <div class="p-3">
+            <div class="alert alert-info mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>Haz clic en el mapa</strong> para colocar un marcador y obtener la dirección automáticamente.
+            </div>
+            <div v-if="selectedMapAddress" class="mt-3">
+              <label class="form-label fw-bold">Dirección seleccionada:</label>
+              <div class="input-group">
+                <input 
+                  v-model="selectedMapAddress" 
+                  type="text" 
+                  class="form-control"
+                  readonly
+                />
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary"
+                  @click="selectedMapAddress = ''"
+                >
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+              <small class="text-muted d-block mt-1">
+                Coordenadas: {{ selectedMapCoordinates }}
+              </small>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="closeMapModal">
+            Cancelar
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            :disabled="!selectedMapAddress"
+            @click="confirmMapSelection"
+          >
+            <i class="bi bi-check-lg me-2"></i>
+            Confirmar Ubicación
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -482,6 +595,14 @@ const error = ref('')
 // Estado para archivos
 const filePreview = reactive({})
 const selectedFiles = reactive({})
+
+// Estado para Google Maps
+const showMapModal = ref(false)
+const mapInstance = ref(null)
+const mapMarker = ref(null)
+const selectedMapAddress = ref('')
+const selectedMapCoordinates = ref('')
+const currentMapFieldKey = ref('')
 
 // Estado para opciones dinámicas
 const fieldOptions = reactive({})
@@ -852,10 +973,49 @@ async function handleSubmit() {
   }
 }
 
+// Función para manejar pegado en campos numéricos
+function handleNumberPaste(event, fieldKey) {
+  event.preventDefault()
+  const pastedText = event.clipboardData.getData('text')
+  // Eliminar todos los espacios y caracteres no numéricos excepto punto y signo negativo
+  const cleanedValue = pastedText.replace(/[^\d.-]/g, '')
+  form[fieldKey] = cleanedValue ? Number(cleanedValue) : null
+}
+
+// Función para aplicar formato automático según el tipo de campo
+function applyAutoFormat(field, value) {
+  if (!value) return value
+  
+  const fieldKey = field.key.toLowerCase()
+  const fieldLabel = field.label?.toLowerCase() || ''
+  
+  // MAYÚSCULAS: placas, matrículas, modelo, licencia, CURP
+  const upperCaseFields = ['placa', 'matricula', 'modelo', 'licencia', 'curp', 'clave']
+  if (upperCaseFields.some(keyword => fieldKey.includes(keyword) || fieldLabel.includes(keyword))) {
+    return String(value).toUpperCase()
+  }
+  
+  // MINÚSCULAS: correos electrónicos
+  if (field.type === 'email' || fieldKey.includes('correo') || fieldKey.includes('email')) {
+    return String(value).toLowerCase()
+  }
+  
+  // Eliminar espacios en campos numéricos al pegar
+  if (field.type === 'number' || fieldKey.includes('numero') || fieldKey.includes('telefono')) {
+    return String(value).replace(/\s+/g, '')
+  }
+  
+  return value
+}
+
 // Función para validar un campo en tiempo real
 function validateField(field, event) {
-  const value = event.target.value
+  let value = event.target.value
   const fieldKey = field.key
+  
+  // Aplicar formato automático
+  value = applyAutoFormat(field, value)
+  form[fieldKey] = value
   
   // Limpiar error previo
   delete errors[fieldKey]
@@ -880,6 +1040,15 @@ function validateField(field, event) {
     // Truncar el valor
     form[fieldKey] = value.substring(0, field.maxlength)
     return false
+  }
+  
+  // Validación específica para email
+  if (field.type === 'email' && value) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(value)) {
+      errors[fieldKey] = 'Correo electrónico inválido'
+      return false
+    }
   }
   
   return true
@@ -1017,6 +1186,133 @@ function isImage(filePath) {
 function getFileName(filePath) {
   if (!filePath) return ''
   return filePath.split('/').pop() || filePath
+}
+
+// Función para generar opciones de años
+function generateYearOptions(field) {
+  const currentYear = new Date().getFullYear()
+  const startYear = field.yearStart || (currentYear - 30) // 30 años atrás por defecto
+  const endYear = field.yearEnd || (currentYear + 10)    // 10 años adelante por defecto
+  const years = []
+  
+  for (let year = endYear; year >= startYear; year--) {
+    years.push(year)
+  }
+  
+  return years
+}
+
+// Funciones para Google Maps
+function openMapModal(fieldKey) {
+  currentMapFieldKey.value = fieldKey
+  selectedMapAddress.value = form[fieldKey] || ''
+  selectedMapCoordinates.value = form[fieldKey + '_coordinates'] || ''
+  showMapModal.value = true
+  
+  // Cargar el mapa después de que el modal se renderice
+  setTimeout(() => {
+    initializeMap()
+  }, 300)
+}
+
+function closeMapModal() {
+  showMapModal.value = false
+  selectedMapAddress.value = ''
+  selectedMapCoordinates.value = ''
+  currentMapFieldKey.value = ''
+  mapInstance.value = null
+  mapMarker.value = null
+}
+
+function confirmMapSelection() {
+  if (currentMapFieldKey.value && selectedMapAddress.value) {
+    form[currentMapFieldKey.value] = selectedMapAddress.value
+    form[currentMapFieldKey.value + '_coordinates'] = selectedMapCoordinates.value
+    closeMapModal()
+  }
+}
+
+async function initializeMap() {
+  // Verificar si Google Maps está disponible
+  if (typeof google === 'undefined' || !google.maps) {
+    console.error('Google Maps no está cargado')
+    error.value = 'Google Maps no está disponible. Por favor, recarga la página.'
+    return
+  }
+  
+  const container = document.getElementById('google-map-container')
+  if (!container) return
+  
+  // Coordenadas por defecto (Ciudad de México)
+  const defaultLocation = { lat: 19.432608, lng: -99.133209 }
+  
+  // Crear el mapa
+  mapInstance.value = new google.maps.Map(container, {
+    center: defaultLocation,
+    zoom: 13,
+    mapTypeControl: true,
+    streetViewControl: false,
+    fullscreenControl: true
+  })
+  
+  // Agregar listener para clics en el mapa
+  mapInstance.value.addListener('click', async (event) => {
+    const lat = event.latLng.lat()
+    const lng = event.latLng.lng()
+    
+    // Colocar o mover el marcador
+    if (mapMarker.value) {
+      mapMarker.value.setPosition(event.latLng)
+    } else {
+      mapMarker.value = new google.maps.Marker({
+        position: event.latLng,
+        map: mapInstance.value,
+        draggable: true,
+        title: 'Ubicación seleccionada'
+      })
+      
+      // Listener para cuando el marcador se arrastre
+      mapMarker.value.addListener('dragend', (markerEvent) => {
+        const newLat = markerEvent.latLng.lat()
+        const newLng = markerEvent.latLng.lng()
+        getAddressFromCoordinates(newLat, newLng)
+      })
+    }
+    
+    // Obtener la dirección desde las coordenadas
+    await getAddressFromCoordinates(lat, lng)
+  })
+  
+  // Si ya hay coordenadas guardadas, mostrarlas
+  if (selectedMapCoordinates.value) {
+    const [lat, lng] = selectedMapCoordinates.value.split(',').map(Number)
+    const position = { lat, lng }
+    mapInstance.value.setCenter(position)
+    mapMarker.value = new google.maps.Marker({
+      position,
+      map: mapInstance.value,
+      draggable: true,
+      title: 'Ubicación guardada'
+    })
+  }
+}
+
+async function getAddressFromCoordinates(lat, lng) {
+  if (typeof google === 'undefined' || !google.maps) return
+  
+  const geocoder = new google.maps.Geocoder()
+  const latlng = { lat, lng }
+  
+  try {
+    const response = await geocoder.geocode({ location: latlng })
+    
+    if (response.results && response.results[0]) {
+      selectedMapAddress.value = response.results[0].formatted_address
+      selectedMapCoordinates.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`
+    }
+  } catch (error) {
+    console.error('Error en geocodificación:', error)
+  }
 }
 
 // Watchers

@@ -68,10 +68,10 @@
           >
             <i class="bi bi-bell"></i>
             <span 
-              v-if="notificationCount > 0"
+              v-if="unreadCount > 0"
               class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
             >
-              {{ notificationCount }}
+              {{ unreadCount }}
               <span class="visually-hidden">notificaciones sin leer</span>
             </span>
           </button>
@@ -219,11 +219,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Panel de Notificaciones -->
+  <NotificationsPanel 
+    :isVisible="showNotificationsPanel" 
+    @close="closeNotificationsPanel"
+  />
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useNotifications } from '@/composables/useNotifications'
+import NotificationsPanel from './NotificationsPanel.vue'
 import api from '../../config/api'
 
 // Props
@@ -238,12 +246,16 @@ const props = defineProps({
   },
   notificationCount: {
     type: Number,
-    default: 3
+    default: 0
   }
 })
 
+// Notificaciones
+const { unreadCount, recentNotifications } = useNotifications()
+const showNotificationsPanel = ref(false)
+
 // Emits
-const emit = defineEmits(['search', 'showNotifications', 'showHistory', 'logout'])
+const emit = defineEmits(['search', 'showHistory', 'logout'])
 
 const router = useRouter()
 const route = useRoute()
@@ -315,7 +327,11 @@ function performSearch() {
 }
 
 function showNotifications() {
-  emit('showNotifications')
+  showNotificationsPanel.value = true
+}
+
+function closeNotificationsPanel() {
+  showNotificationsPanel.value = false
 }
 
 function showHistory() {

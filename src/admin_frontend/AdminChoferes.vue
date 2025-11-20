@@ -101,9 +101,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import AdminLayout from './layouts/AdminLayout.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
+import { useNotifications } from '@/composables/useNotifications'
 import http from '@/config/api.js'
 
 const { setupAxiosInterceptors } = useAdminAuth()
+const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
 
 const choferes = ref([])
 const usuarios = ref([])
@@ -134,9 +136,15 @@ async function guardar() {
   try {
     loading.value = true
     if (form.id) {
-  await http.put(`/admin/choferes/${form.id}`, form)
+      await http.put(`/admin/choferes/${form.id}`, form)
+      const chofer = choferes.value.find(c => c.id === form.id)
+      const nombreChofer = chofer?.usuario ? `${chofer.usuario.nombre} ${chofer.usuario.apellidos}` : `ID ${form.id}`
+      notifyUpdated('chofer', nombreChofer)
     } else {
-  await http.post('/admin/choferes', form)
+      const response = await http.post('/admin/choferes', form)
+      const usuario = usuarios.value.find(u => u.id === form.usuario_id)
+      const nombreChofer = usuario ? `${usuario.nombre} ${usuario.apellidos}` : 'Nuevo chofer'
+      notifyCreated('chofer', nombreChofer)
     }
     reset()
     await cargar()
@@ -160,9 +168,13 @@ function reset() {
 }
 
 async function eliminar(id) {
+  const chofer = choferes.value.find(c => c.id === id)
+  const nombreChofer = chofer?.usuario ? `${chofer.usuario.nombre} ${chofer.usuario.apellidos}` : `ID ${id}`
+  
   if (confirm('¿Eliminar este chofer?')) {
     try {
-  await http.delete(`/admin/choferes/${id}`)
+      await http.delete(`/admin/choferes/${id}`)
+      notifyDeleted('chofer', nombreChofer)
       await cargar()
     } catch (error) {
       console.error('Error eliminando:', error)

@@ -132,9 +132,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import AdminLayout from './layouts/AdminLayout.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
+import { useNotifications } from '@/composables/useNotifications'
 import http from '@/config/api.js'
 
 const { setupAxiosInterceptors } = useAdminAuth()
+const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
 
 const hijos = ref([])
 const padres = ref([])
@@ -172,9 +174,11 @@ async function guardar() {
   try {
     loading.value = true
     if (form.id) {
-  await http.put(`/admin/hijos/${form.id}`, form)
+      await http.put(`/admin/hijos/${form.id}`, form)
+      notifyUpdated('hijo', form.nombre || `ID ${form.id}`)
     } else {
-  await http.post('/admin/hijos', form)
+      const response = await http.post('/admin/hijos', form)
+      notifyCreated('hijo', form.nombre || 'Nuevo estudiante')
     }
     reset()
     await cargar()
@@ -202,9 +206,13 @@ function reset() {
 }
 
 async function eliminar(id) {
+  const hijo = hijos.value.find(h => h.id === id)
+  const nombreHijo = hijo?.nombre || `ID ${id}`
+  
   if (confirm('¿Eliminar este hijo?')) {
     try {
-  await http.delete(`/admin/hijos/${id}`)
+      await http.delete(`/admin/hijos/${id}`)
+      notifyDeleted('hijo', nombreHijo)
       await cargar()
     } catch (error) {
       console.error('Error eliminando:', error)

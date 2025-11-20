@@ -297,9 +297,11 @@
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from './layouts/AdminLayout.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
+import { useNotifications } from '@/composables/useNotifications'
 import http from '@/config/api.js'
 
 const { setupAxiosInterceptors } = useAdminAuth()
+const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
 
 // Estado reactivo
 const usuarios = ref([])
@@ -481,9 +483,11 @@ const guardar = async () => {
       }
       
       await http.put(`/admin/usuarios/${form.value.id}`, updateData)
+      notifyUpdated('usuario', `${form.value.nombre} ${form.value.apellidos}`)
     } else {
       // Para creación, enviar todos los datos incluyendo contraseña
-      await http.post('/admin/usuarios', form.value)
+      const response = await http.post('/admin/usuarios', form.value)
+      notifyCreated('usuario', `${form.value.nombre} ${form.value.apellidos}`)
     }
     await cargar()
     cerrarModal()
@@ -500,7 +504,11 @@ const borrarSeleccionados = async () => {
   
   for (const id of seleccionados.value) {
     try {
+      const usuario = usuarios.value.find(u => u.id === id)
+      const nombreUsuario = usuario ? `${usuario.nombre} ${usuario.apellidos}` : `ID ${id}`
+      
       await http.delete(`/admin/usuarios/${id}`)
+      notifyDeleted('usuario', nombreUsuario)
     } catch (e) {
       console.error('Error eliminando usuario:', e)
     }

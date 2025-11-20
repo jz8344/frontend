@@ -30,27 +30,46 @@
 </template>
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+import { useNotifications } from '@/composables/useNotifications';
 import http from '@/config/api.js';
 
 const unidades = ref([])
 const form = reactive({id:null, matricula:'', modelo:'', capacidad:1})
+const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
+
 function headers(){ return {} }
+
 async function cargar(){
   const res = await http.get('/admin/unidades', { headers: headers() })
   unidades.value = res.data
 }
+
 async function guardar(){
   if(form.id){
-  await http.put(`/admin/unidades/${form.id}`, form, { headers: headers() })
+    await http.put(`/admin/unidades/${form.id}`, form, { headers: headers() })
+    notifyUpdated('unidad', form.matricula || `ID ${form.id}`)
   }else{
-  await http.post('/admin/unidades', form, { headers: headers() })
+    const response = await http.post('/admin/unidades', form, { headers: headers() })
+    notifyCreated('unidad', response.data.matricula || 'Nueva unidad')
   }
   reset();
   await cargar();
 }
+
 function edit(u){ Object.assign(form,u) }
+
 function reset(){ Object.assign(form,{id:null,matricula:'',modelo:'',capacidad:1}) }
-async function eliminar(id){ if(confirm('¿Eliminar?')){ await http.delete(`/admin/unidades/${id}`, { headers: headers() }); await cargar(); } }
+
+async function eliminar(id){ 
+  const unidad = unidades.value.find(u => u.id === id)
+  const nombreUnidad = unidad?.matricula || `ID ${id}`
+  
+  if(confirm('¿Eliminar?')){ 
+    await http.delete(`/admin/unidades/${id}`, { headers: headers() }); 
+    notifyDeleted('unidad', nombreUnidad)
+    await cargar(); 
+  } 
+}
 
 onMounted(cargar)
 </script>
