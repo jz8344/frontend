@@ -10,7 +10,7 @@ export function useNotifications() {
   const { adminName } = useAdminAuth()
 
   // Función para agregar una notificación
-  function addNotification(title, message, type = 'info', entityType = '', entityId = null) {
+  function addNotification(title, message, type = 'info', entityType = '', entityId = null, autoRemove = false) {
     const notification = {
       id: notificationIdCounter++,
       title,
@@ -26,8 +26,9 @@ export function useNotifications() {
     notifications.value.unshift(notification)
     unreadCount.value++
 
-    // Auto-eliminar después de 10 segundos si es tipo success o info
-    if (type === 'success' || type === 'info') {
+    // Solo auto-eliminar si se especifica explícitamente
+    // Las notificaciones del panel NO se auto-eliminan
+    if (autoRemove) {
       setTimeout(() => {
         removeNotification(notification.id)
       }, 10000)

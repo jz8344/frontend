@@ -56,15 +56,23 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Panel de Notificaciones -->
+  <NotificationsPanel 
+    :is-visible="showNotificationsPanel"
+    @close="showNotificationsPanel = false"
+  />
 </template>
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+import NotificationsPanel from './components/NotificationsPanel.vue';
 import { useNotifications } from '@/composables/useNotifications';
 import http from '@/config/api.js';
 
 const unidades = ref([])
 const form = reactive({id:null, matricula:'', modelo:'', capacidad:1})
-const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
+const showNotificationsPanel = ref(false)
+const { notifyCreated, notifyUpdated, notifyDeleted, notifications, unreadCount } = useNotifications()
 
 function headers(){ return {} }
 

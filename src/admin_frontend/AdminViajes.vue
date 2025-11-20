@@ -2,9 +2,15 @@
   <div class="viajes-container">
     <div class="header">
       <h2>Gestión de Viajes</h2>
-      <button @click="openModal('create')" class="btn-primary">
-        <i class="icon-plus"></i> Nuevo Viaje
-      </button>
+      <div class="header-actions">
+        <button @click="showNotificationsPanel = true" class="btn-notification" title="Ver notificaciones">
+          <i class="bi bi-bell-fill"></i>
+          <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
+        </button>
+        <button @click="openModal('create')" class="btn-primary">
+          <i class="icon-plus"></i> Nuevo Viaje
+        </button>
+      </div>
     </div>
 
     <!-- Filtros -->
@@ -397,17 +403,27 @@
       </div>
     </div>
   </div>
+
+  <!-- Panel de Notificaciones -->
+  <NotificationsPanel 
+    :is-visible="showNotificationsPanel"
+    @close="showNotificationsPanel = false"
+  />
 </template>
 
 <script>
 import axios from 'axios';
+import NotificationsPanel from './components/NotificationsPanel.vue';
 import { useNotifications } from '@/composables/useNotifications';
 
 export default {
   name: 'AdminViajes',
+  components: {
+    NotificationsPanel
+  },
   setup() {
-    const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications();
-    return { notifyCreated, notifyUpdated, notifyDeleted };
+    const { notifyCreated, notifyUpdated, notifyDeleted, addNotification, notifications, unreadCount } = useNotifications();
+    return { notifyCreated, notifyUpdated, notifyDeleted, addNotification, notifications, unreadCount };
   },
   data() {
     return {
@@ -417,6 +433,7 @@ export default {
       unidades: [],
       showModal: false,
       showDetailsModal: false,
+      showNotificationsPanel: false,
       modalMode: 'create',
       loading: false,
       selectedViaje: null,
@@ -703,8 +720,19 @@ export default {
     },
     async abrirConfirmaciones(id) {
       try {
+        const viaje = this.viajes.find(v => v.id === id);
         await axios.post(`/api/admin/viajes/${id}/abrir-confirmaciones`);
         this.$toast?.success('Periodo de confirmaciones abierto');
+        
+        // Generar notificación en el panel
+        this.addNotification(
+          '🔓 Confirmaciones Abiertas',
+          `Se han abierto las confirmaciones para el viaje: ${viaje?.nombre_ruta || 'ID ' + id}`,
+          'success',
+          'viaje',
+          id
+        );
+        
         this.loadViajes();
       } catch (error) {
         console.error('Error:', error);
@@ -713,8 +741,19 @@ export default {
     },
     async cerrarConfirmaciones(id) {
       try {
+        const viaje = this.viajes.find(v => v.id === id);
         await axios.post(`/api/admin/viajes/${id}/cerrar-confirmaciones`);
         this.$toast?.success('Periodo de confirmaciones cerrado');
+        
+        // Generar notificación en el panel
+        this.addNotification(
+          '🔒 Confirmaciones Cerradas',
+          `Se han cerrado las confirmaciones para el viaje: ${viaje?.nombre_ruta || 'ID ' + id}`,
+          'info',
+          'viaje',
+          id
+        );
+        
         this.loadViajes();
       } catch (error) {
         console.error('Error:', error);
@@ -757,6 +796,44 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-notification {
+  position: relative;
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  color: #495057;
+}
+
+.btn-notification:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #007bff;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 18px;
+  text-align: center;
 }
 
 .filters {

@@ -291,17 +291,24 @@
       </div>
     </div>
   </AdminLayout>
+
+  <!-- Panel de Notificaciones -->
+  <NotificationsPanel 
+    :is-visible="showNotificationsPanel"
+    @close="showNotificationsPanel = false"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from './layouts/AdminLayout.vue'
+import NotificationsPanel from './components/NotificationsPanel.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
 import { useNotifications } from '@/composables/useNotifications'
 import http from '@/config/api.js'
 
 const { setupAxiosInterceptors } = useAdminAuth()
-const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
+const { notifyCreated, notifyUpdated, notifyDeleted, addNotification, notifications, unreadCount } = useNotifications()
 
 // Estado reactivo
 const usuarios = ref([])
@@ -321,6 +328,7 @@ const showConfirmPwd = ref(false)
 const cambiarPassword = ref(false)
 const passwordError = ref('')
 const usuarioPassword = ref(null)
+const showNotificationsPanel = ref(false)
 
 const form = ref({
   id: null,
@@ -401,8 +409,17 @@ const guardarPassword = async () => {
       contrasena: passwordForm.value.nueva_contrasena
     })
     
+    // Generar notificación de cambio de contraseña
+    const nombreUsuario = `${usuarioPassword.value.nombre} ${usuarioPassword.value.apellidos}`
+    addNotification(
+      '🔑 Contraseña Actualizada',
+      `Se ha cambiado la contraseña del usuario: ${nombreUsuario}`,
+      'info',
+      'usuario',
+      usuarioPassword.value.id
+    )
+    
     cerrarModalPassword()
-    // Mostrar mensaje de éxito (opcional)
     console.log('Contraseña actualizada correctamente')
   } catch (e) {
     passwordError.value = e.response?.data?.error || 'Error actualizando contraseña'
@@ -523,7 +540,7 @@ const handleSearch = (query) => {
 }
 
 const handleNotifications = () => {
-  console.log('Mostrar notificaciones')
+  showNotificationsPanel.value = true
 }
 
 const handleHistory = () => {

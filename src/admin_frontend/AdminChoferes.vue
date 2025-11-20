@@ -95,21 +95,29 @@
       </div>
     </div>
   </AdminLayout>
+
+  <!-- Panel de Notificaciones -->
+  <NotificationsPanel 
+    :is-visible="showNotificationsPanel"
+    @close="showNotificationsPanel = false"
+  />
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import AdminLayout from './layouts/AdminLayout.vue'
+import NotificationsPanel from './components/NotificationsPanel.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
 import { useNotifications } from '@/composables/useNotifications'
 import http from '@/config/api.js'
 
 const { setupAxiosInterceptors } = useAdminAuth()
-const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
+const { notifyCreated, notifyUpdated, notifyDeleted, notifications, unreadCount } = useNotifications()
 
 const choferes = ref([])
 const usuarios = ref([])
 const loading = ref(false)
+const showNotificationsPanel = ref(false)
 const form = reactive({ 
   id: null, 
   usuario_id: '', 
@@ -187,7 +195,7 @@ const handleSearch = (query) => {
 }
 
 const handleNotifications = () => {
-  console.log('Mostrar notificaciones')
+  showNotificationsPanel.value = true
 }
 
 const handleHistory = () => {

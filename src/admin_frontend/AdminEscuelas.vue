@@ -5,7 +5,7 @@
     :loading="loading"
     :related-data="{}"
     :user-name="userName"
-    :notification-count="0"
+    :notification-count="unreadCount"
     @search="handleSearch"
     @sort="handleSort"
     @create="handleCreate"
@@ -42,19 +42,26 @@
       <button type="button" class="btn-close" @click="dismissAlert(index)"></button>
     </div>
   </div>
+
+  <!-- Panel de Notificaciones -->
+  <NotificationsPanel 
+    :is-visible="showNotificationsPanel"
+    @close="showNotificationsPanel = false"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import DynamicAppLayout from './layouts/DynamicAppLayout.vue'
 import DynamicListView from './components/DynamicListView.vue'
+import NotificationsPanel from './components/NotificationsPanel.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
 import { useNotifications } from '@/composables/useNotifications.js'
 import { getAppConfig } from './config/appConfigs.js'
 import http from '@/config/api.js'
 
 const { adminName, setupAxiosInterceptors } = useAdminAuth()
-const { notifyCreated, notifyUpdated, notifyDeleted } = useNotifications()
+const { notifyCreated, notifyUpdated, notifyDeleted, notifications, unreadCount } = useNotifications()
 
 // Configuración de la app
 const config = getAppConfig('escuelas')
@@ -67,6 +74,7 @@ const alerts = ref([])
 const sortField = ref('')
 const sortDirection = ref('asc')
 const searchQuery = ref('')
+const showNotificationsPanel = ref(false)
 
 const userName = computed(() => adminName.value || 'Admin')
 
@@ -238,7 +246,7 @@ function handleSort({ field, direction }) {
 }
 
 function handleNotifications() {
-  showAlert('Funcionalidad de notificaciones en desarrollo', 'info')
+  showNotificationsPanel.value = true
 }
 
 function handleHistory() {
