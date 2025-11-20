@@ -44,7 +44,8 @@ export function useNotifications() {
       'chofer': '¡Nuevo Chofer Registrado!',
       'viaje': '¡Nuevo Viaje Creado!',
       'usuario': '¡Nuevo Usuario Registrado!',
-      'hijo': '¡Nuevo Hijo Registrado!'
+      'hijo': '¡Nuevo Hijo Registrado!',
+      'respaldo': '¡Nuevo Respaldo Creado!'
     }
 
     const message = `${adminName.value || 'Admin'} ha registrado: ${entityName}`
@@ -63,7 +64,8 @@ export function useNotifications() {
       'chofer': 'Chofer Actualizado',
       'viaje': 'Viaje Actualizado',
       'usuario': 'Usuario Actualizado',
-      'hijo': 'Hijo Actualizado'
+      'hijo': 'Hijo Actualizado',
+      'respaldo': 'Respaldo Actualizado'
     }
 
     let message = `${adminName.value || 'Admin'} ha actualizado: ${entityName}`
@@ -87,7 +89,8 @@ export function useNotifications() {
       'chofer': 'Chofer Eliminado',
       'viaje': 'Viaje Eliminado',
       'usuario': 'Usuario Eliminado',
-      'hijo': 'Hijo Eliminado'
+      'hijo': 'Hijo Eliminado',
+      'respaldo': 'Respaldo Eliminado'
     }
 
     const message = `${adminName.value || 'Admin'} ha eliminado: ${entityName}`
