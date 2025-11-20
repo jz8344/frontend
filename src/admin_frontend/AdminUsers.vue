@@ -292,18 +292,11 @@
       </div>
     </div>
   </AdminLayout>
-
-  <!-- Panel de Notificaciones -->
-  <NotificationsPanel 
-    :is-visible="showNotificationsPanel"
-    @close="showNotificationsPanel = false"
-  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from './layouts/AdminLayout.vue'
-import NotificationsPanel from './components/NotificationsPanel.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
 import { useNotifications } from '@/composables/useNotifications'
 import http from '@/config/api.js'
@@ -329,7 +322,6 @@ const showConfirmPwd = ref(false)
 const cambiarPassword = ref(false)
 const passwordError = ref('')
 const usuarioPassword = ref(null)
-const showNotificationsPanel = ref(false)
 
 const form = ref({
   id: null,
@@ -541,7 +533,7 @@ const handleSearch = (query) => {
 }
 
 const handleNotifications = () => {
-  showNotificationsPanel.value = true
+  // El panel se abre desde AdminNavbar
 }
 
 const handleHistory = () => {

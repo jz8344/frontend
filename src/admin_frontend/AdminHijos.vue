@@ -127,18 +127,11 @@
       </div>
     </div>
   </AdminLayout>
-
-  <!-- Panel de Notificaciones -->
-  <NotificationsPanel 
-    :is-visible="showNotificationsPanel"
-    @close="showNotificationsPanel = false"
-  />
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import AdminLayout from './layouts/AdminLayout.vue'
-import NotificationsPanel from './components/NotificationsPanel.vue'
 import { useAdminAuth } from '@/composables/useAdminAuth.js'
 import { useNotifications } from '@/composables/useNotifications'
 import http from '@/config/api.js'
@@ -150,7 +143,6 @@ const hijos = ref([])
 const padres = ref([])
 const escuelas = ref([])
 const loading = ref(false)
-const showNotificationsPanel = ref(false)
 const form = reactive({ 
   id: null, 
   nombre: '', 
@@ -234,7 +226,7 @@ const handleSearch = (query) => {
 }
 
 const handleNotifications = () => {
-  showNotificationsPanel.value = true
+  // El panel se abre desde AdminNavbar
 }
 
 const handleHistory = () => {
