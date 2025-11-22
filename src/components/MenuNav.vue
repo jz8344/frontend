@@ -19,7 +19,6 @@
       <router-link to="/" @click="closeMobileMenu">Inicio</router-link>
       <router-link to="/about" @click="closeMobileMenu">Sobre nosotros</router-link>
       <router-link to="/aliados" @click="closeMobileMenu">Aliados</router-link>
-      <router-link to="/rutas" @click="closeMobileMenu">Rutas</router-link>
       <template v-if="!usuario || !usuario.id">
         <router-link to="/login" @click="closeMobileMenu">Iniciar sesión</router-link>
         <router-link to="/register" @click="closeMobileMenu">Registrarte</router-link>

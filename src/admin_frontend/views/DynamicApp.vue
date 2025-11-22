@@ -81,7 +81,7 @@ const { notifyCreated, notifyUpdated, notifyDeleted, notifications, unreadCount 
 const appName = computed(() => props.app || route.params.app)
 
 // Validar que la app existe
-const validApps = ['usuarios', 'hijos', 'choferes', 'unidades', 'escuelas', 'viajes', 'respaldos']
+const validApps = ['usuarios', 'hijos', 'choferes', 'unidades', 'escuelas', 'respaldos']
 if (!validApps.includes(appName.value)) {
   router.push('/admin/dashboard')
 }

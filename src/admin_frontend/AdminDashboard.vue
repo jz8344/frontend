@@ -245,15 +245,6 @@ const cards = [
     img: '/src/assets/icons/unidades.png',
   },
   {
-    key: 'viajes',
-    title: 'Viajes',
-    description: 'Gestión de rutas y viajes',
-    icon: 'bi-geo-alt-fill',
-    color: 'danger',
-    img: '/src/assets/icons/viajes.png',
-    badge: 'Nuevo',
-  },
-  {
     key: 'estadisticas',
     title: 'Estadísticas',
     description: 'Reportes y métricas',
@@ -272,7 +263,6 @@ const routeMap = {
   'choferes': '/admin/app/choferes',
   'escuelas': '/admin/escuelas',
   'unidades': '/admin/app/unidades',
-  'viajes': '/admin/app/viajes',
   'estadisticas': '/admin/estadisticas',
   'respaldos': '/admin/app/respaldos',
   'ajustes': '/admin/configuracion',

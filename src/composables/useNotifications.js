@@ -107,7 +107,6 @@ export function useNotifications() {
       'escuela': '¡Nueva Escuela Registrada!',
       'unidad': '¡Nueva Unidad Registrada!',
       'chofer': '¡Nuevo Chofer Registrado!',
-      'viaje': '¡Nuevo Viaje Creado!',
       'usuario': '¡Nuevo Usuario Registrado!',
       'hijo': '¡Nuevo Hijo Registrado!',
       'respaldo': '¡Nuevo Respaldo Creado!'
@@ -127,7 +126,6 @@ export function useNotifications() {
       'escuela': 'Escuela Actualizada',
       'unidad': 'Unidad Actualizada',
       'chofer': 'Chofer Actualizado',
-      'viaje': 'Viaje Actualizado',
       'usuario': 'Usuario Actualizado',
       'hijo': 'Hijo Actualizado',
       'respaldo': 'Respaldo Actualizado'
@@ -155,7 +153,6 @@ export function useNotifications() {
       'escuela': 'Escuela Eliminada',
       'unidad': 'Unidad Eliminada',
       'chofer': 'Chofer Eliminado',
-      'viaje': 'Viaje Eliminado',
       'usuario': 'Usuario Eliminado',
       'hijo': 'Hijo Eliminado',
       'respaldo': 'Respaldo Eliminado'

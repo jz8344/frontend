@@ -1377,23 +1377,6 @@ watch(() => form.municipio, (newMunicipio, oldMunicipio) => {
   }
 })
 
-// Watcher para unidad_id - actualizar capacidad automáticamente (solo para viajes)
-watch(() => form.unidad_id, (newUnidadId) => {
-  if (newUnidadId && props.config.name === 'Viajes') {
-    // Buscar la unidad seleccionada en relatedData
-    const unidades = props.relatedData?.unidades || []
-    const unidadSeleccionada = unidades.find(u => u.id === parseInt(newUnidadId))
-    
-    console.log('Unidad seleccionada:', unidadSeleccionada)
-    
-    // Buscar en capacidad (campo correcto en DB)
-    if (unidadSeleccionada && unidadSeleccionada.capacidad) {
-      form.capacidad_maxima = parseInt(unidadSeleccionada.capacidad)
-      console.log('Capacidad actualizada:', form.capacidad_maxima, 'desde unidad:', unidadSeleccionada.numero_unidad || unidadSeleccionada.matricula)
-    }
-  }
-})
-
 // Inicializar al montar
 initializeForm()
 </script>

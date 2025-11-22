@@ -141,23 +141,6 @@
             </div>
 
             <div class="col-md-3 mb-3">
-              <div class="card stats-card bg-danger text-white">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <h4 class="card-title mb-0">{{ totales.viajes }}</h4>
-                      <p class="card-text mb-0">Viajes</p>
-                      <small class="opacity-75">Total histórico</small>
-                    </div>
-                    <div class="stats-icon">
-                      <i class="bi bi-geo-alt-fill"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-3 mb-3">
               <div class="card stats-card bg-dark text-white">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center">
@@ -173,79 +156,12 @@
                 </div>
               </div>
             </div>
-
-            <div class="col-md-3 mb-3">
-              <div class="card stats-card bg-primary bg-gradient text-white">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                      <h4 class="card-title mb-0">{{ totales.rutas }}</h4>
-                      <p class="card-text mb-0">Rutas</p>
-                      <small class="opacity-75">Rutas configuradas</small>
-                    </div>
-                    <div class="stats-icon">
-                      <i class="bi bi-map-fill"></i>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- Gráficos y Tablas -->
           <div class="row mb-4">
-            <!-- Rutas por Estado -->
-            <div class="col-md-4 mb-4">
-              <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <h5 class="mb-0">
-                    <i class="bi bi-geo-alt text-primary me-2"></i>
-                    Rutas por Estado
-                  </h5>
-                </div>
-                <div class="card-body">
-                  <div v-if="estadosRutas.length > 0">
-                    <div class="table-responsive">
-                      <table class="table table-sm">
-                        <thead>
-                          <tr>
-                            <th>Estado</th>
-                            <th class="text-center">Cant.</th>
-                            <th class="text-center">%</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="estado in estadosRutas" :key="estado.nombre">
-                            <td>
-                              <span class="badge" :class="getBadgeClass(estado.nombre.toLowerCase())">
-                                {{ estado.nombre }}
-                              </span>
-                            </td>
-                            <td class="text-center">{{ estado.cantidad }}</td>
-                            <td class="text-center">
-                              <div class="progress progress-sm">
-                                <div 
-                                  class="progress-bar" 
-                                  :style="`width: ${estado.porcentaje}%`"
-                                ></div>
-                              </div>
-                              <small>{{ estado.porcentaje }}%</small>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div v-else class="text-center text-muted py-4">
-                    <i class="bi bi-geo-alt-fill fs-1"></i>
-                    <p class="mt-2">No hay rutas registradas</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- Escuelas por Nivel -->
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 mb-4">
               <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                   <h5 class="mb-0">
@@ -291,7 +207,7 @@
             </div>
             
             <!-- Actividad del Sistema -->
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 mb-4">
               <div class="card h-100">
                 <div class="card-header">
                   <h5 class="mb-0">
@@ -312,26 +228,6 @@
                     </div>
                     
                     <div class="activity-item">
-                      <div class="activity-icon bg-success">
-                        <i class="bi bi-play-circle"></i>
-                      </div>
-                      <div class="activity-content">
-                        <strong>Rutas activas</strong>
-                        <span class="badge bg-success ms-2">{{ actividadHoy.rutasActivas }}</span>
-                      </div>
-                    </div>
-
-                    <div class="activity-item">
-                      <div class="activity-icon bg-danger">
-                        <i class="bi bi-geo-alt"></i>
-                      </div>
-                      <div class="activity-content">
-                        <strong>Viajes programados</strong>
-                        <span class="badge bg-danger ms-2">{{ actividadHoy.viajesHoy }}</span>
-                      </div>
-                    </div>
-                    
-                    <div class="activity-item">
                       <div class="activity-icon bg-info">
                         <i class="bi bi-bus"></i>
                       </div>
@@ -348,7 +244,7 @@
 
           <!-- Listas Recientes -->
           <div class="row">
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 mb-4">
               <div class="card h-100">
                 <div class="card-header">
                   <h5 class="mb-0">
@@ -385,43 +281,7 @@
               </div>
             </div>
 
-            <div class="col-md-4 mb-4">
-              <div class="card h-100">
-                <div class="card-header">
-                  <h5 class="mb-0">
-                    <i class="bi bi-map text-warning me-2"></i>
-                    Rutas Recientes
-                  </h5>
-                </div>
-                <div class="card-body">
-                  <div v-if="rutasRecientes.length > 0">
-                    <div class="list-group list-group-flush">
-                      <div 
-                        v-for="ruta in rutasRecientes" 
-                        :key="ruta.id"
-                        class="list-group-item d-flex justify-content-between align-items-center px-0"
-                      >
-                        <div>
-                          <div class="fw-medium">{{ ruta.nombre || 'Sin nombre' }}</div>
-                          <small class="text-muted">
-                            {{ ruta.inicio || 'Sin inicio' }} - {{ ruta.fin || 'Sin destino' }}
-                          </small>
-                        </div>
-                        <span class="badge" :class="getBadgeClass(ruta.estado)">
-                          {{ ruta.estado || 'Sin estado' }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div v-else class="text-center text-muted py-4">
-                    <i class="bi bi-geo-alt fs-1"></i>
-                    <p class="mt-2">No hay rutas recientes</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
+            <div class="col-md-6 mb-4">
               <div class="card h-100">
                 <div class="card-header">
                   <h5 class="mb-0">
@@ -474,26 +334,19 @@ const totales = reactive({
   hijos: 0,
   choferes: 0,
   unidades: 0,
-  rutas: 0,
   escuelas: 0,
-  viajes: 0,
   backups: 0
 })
 
-const estadosRutas = ref([])
 const escuelasPorNivel = ref([])
-const viajesPorEstado = ref([])
 const backupsRecientes = ref([])
 
 const actividadHoy = reactive({
   usuarios: 0,
-  rutasActivas: 0,
-  unidadesActivas: 0,
-  viajesHoy: 0
+  unidadesActivas: 0
 })
 
 const usuariosRecientes = ref([])
-const rutasRecientes = ref([])
 
 async function cargarDatos() {
   cargando.value = true
@@ -501,14 +354,12 @@ async function cargarDatos() {
   
   try {
     // Cargar datos de todas las entidades en paralelo
-    const [usuariosRes, hijosRes, choferesRes, unidadesRes, rutasRes, escuelasRes, viajesRes, backupsRes] = await Promise.all([
+    const [usuariosRes, hijosRes, choferesRes, unidadesRes, escuelasRes, backupsRes] = await Promise.all([
       http.get('/admin/usuarios'),
       http.get('/admin/hijos'), 
       http.get('/admin/choferes'),
       http.get('/admin/unidades'),
-      http.get('/admin/rutas'),
       http.get('/admin/escuelas'),
-      http.get('/admin/viajes'),
       http.get('/admin/backups')
     ])
 
@@ -517,36 +368,8 @@ async function cargarDatos() {
     totales.hijos = hijosRes.data?.length || 0
     totales.choferes = choferesRes.data?.length || 0
     totales.unidades = unidadesRes.data?.length || 0
-    totales.rutas = rutasRes.data?.length || 0
     totales.escuelas = escuelasRes.data?.length || 0
-    totales.viajes = viajesRes.data?.length || 0
     totales.backups = backupsRes.data?.length || 0
-
-    // Procesar datos de rutas
-    const rutas = rutasRes.data || []
-    if (rutas.length > 0) {
-      const estadosCount = {}
-      rutas.forEach(ruta => {
-        const estado = ruta.estado || 'sin_estado'
-        estadosCount[estado] = (estadosCount[estado] || 0) + 1
-      })
-
-      estadosRutas.value = Object.entries(estadosCount).map(([nombre, cantidad]) => ({
-        nombre: nombre.charAt(0).toUpperCase() + nombre.slice(1).replace('_', ' '),
-        cantidad,
-        porcentaje: Math.round((cantidad / rutas.length) * 100)
-      }))
-
-      actividadHoy.rutasActivas = rutas.filter(r => r.estado === 'activa').length
-      
-      rutasRecientes.value = rutas
-        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
-        .slice(0, 5)
-    } else {
-      estadosRutas.value = []
-      actividadHoy.rutasActivas = 0
-      rutasRecientes.value = []
-    }
 
     // Procesar datos de escuelas
     const escuelas = escuelasRes.data || []
@@ -564,31 +387,6 @@ async function cargarDatos() {
       }))
     } else {
       escuelasPorNivel.value = []
-    }
-
-    // Procesar datos de viajes
-    const viajes = viajesRes.data || []
-    if (viajes.length > 0) {
-      const estadosViajesCount = {}
-      viajes.forEach(viaje => {
-        const estado = viaje.estado || 'sin_estado'
-        estadosViajesCount[estado] = (estadosViajesCount[estado] || 0) + 1
-      })
-
-      viajesPorEstado.value = Object.entries(estadosViajesCount).map(([nombre, cantidad]) => ({
-        nombre: nombre.charAt(0).toUpperCase() + nombre.slice(1).replace('_', ' '),
-        cantidad,
-        porcentaje: Math.round((cantidad / viajes.length) * 100)
-      }))
-
-      const hoy = new Date().toDateString()
-      actividadHoy.viajesHoy = viajes.filter(v => {
-        const fechaViaje = v.fecha_viaje ? new Date(v.fecha_viaje).toDateString() : null
-        return fechaViaje === hoy
-      }).length
-    } else {
-      viajesPorEstado.value = []
-      actividadHoy.viajesHoy = 0
     }
 
     // Procesar datos de backups
@@ -619,7 +417,7 @@ async function cargarDatos() {
       usuariosRecientes.value = []
     }
 
-    actividadHoy.unidadesActivas = Math.min(actividadHoy.rutasActivas, totales.unidades)
+    actividadHoy.unidadesActivas = totales.unidades // Simplificado ya que no hay rutas activas
 
   } catch (err) {
     error.value = 'Error al cargar estadísticas: ' + (err.response?.data?.message || err.message)
