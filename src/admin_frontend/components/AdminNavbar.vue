@@ -251,7 +251,7 @@ const props = defineProps({
 })
 
 // Notificaciones
-const { unreadCount, recentNotifications } = useNotifications()
+const { unreadCount, recentNotifications, fetchNotifications } = useNotifications()
 const showNotificationsPanel = ref(false)
 
 // Emits
@@ -358,6 +358,9 @@ async function logout() {
 
 // Lifecycle
 onMounted(() => {
+  // Cargar notificaciones iniciales
+  fetchNotifications()
+
   const stored = localStorage.getItem('darkMode') === 'true'
   darkMode.value = stored
   const theme = stored ? 'dark' : 'light'

@@ -1,47 +1,101 @@
 import { ref, computed } from 'vue'
 import { useAdminAuth } from './useAdminAuth'
+import http from '@/config/api'
 
 // Estado global de notificaciones
 const notifications = ref([])
 const unreadCount = ref(0)
-let notificationIdCounter = 1
+const isLoading = ref(false)
 
 export function useNotifications() {
   const { adminName } = useAdminAuth()
 
+  // Cargar notificaciones desde el backend
+  async function fetchNotifications() {
+    if (isLoading.value) return
+    
+    try {
+      isLoading.value = true
+      const response = await http.get('/admin/notificaciones')
+      
+      // Mapear respuesta del backend al formato local
+      notifications.value = response.data.data.map(n => ({
+        id: n.id,
+        title: n.titulo,
+        message: n.mensaje,
+        type: n.tipo,
+        entityType: n.entity_type,
+        entityId: n.entity_id,
+        adminName: n.admin_name,
+        timestamp: n.created_at,
+        read: n.read
+      }))
+      
+      unreadCount.value = response.data.unread_count
+    } catch (error) {
+      console.error('Error cargando notificaciones:', error)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   // Función para agregar una notificación
-  function addNotification(title, message, type = 'info', entityType = '', entityId = null, autoRemove = false) {
+  async function addNotification(title, message, type = 'info', entityType = '', entityId = null, autoRemove = false) {
+    // 1. Agregar localmente (optimistic update)
+    const tempId = Date.now() // ID temporal
     const notification = {
-      id: notificationIdCounter++,
+      id: tempId,
       title,
       message,
-      type, // 'success', 'info', 'warning', 'danger'
-      entityType, // 'escuela', 'unidad', 'chofer', 'viaje', etc.
+      type,
+      entityType,
       entityId,
       adminName: adminName.value || 'Admin',
       timestamp: new Date().toISOString(),
       read: false
     }
 
-    notifications.value.unshift(notification)
-    unreadCount.value++
-    
-    // DEBUG: Log para verificar que se está agregando
-    console.log('🔔 Notificación agregada:', {
-      title,
-      message,
-      type,
-      entityType,
-      total: notifications.value.length,
-      unreadCount: unreadCount.value
-    })
-
-    // Solo auto-eliminar si se especifica explícitamente
-    // Las notificaciones del panel NO se auto-eliminan
+    // Si es autoRemove (toast), no la guardamos en BD, solo local
     if (autoRemove) {
+      notifications.value.unshift(notification)
       setTimeout(() => {
-        removeNotification(notification.id)
-      }, 10000)
+        const index = notifications.value.findIndex(n => n.id === tempId)
+        if (index !== -1) notifications.value.splice(index, 1)
+      }, 5000)
+      return notification
+    }
+
+    // 2. Guardar en BD (solo si no es autoRemove)
+    try {
+      const response = await http.post('/admin/notificaciones', {
+        titulo: title,
+        mensaje: message,
+        tipo: type,
+        entity_type: entityType,
+        entity_id: entityId,
+        admin_name: adminName.value || 'Admin'
+      })
+      
+      // Reemplazar la notificación temporal con la real del backend o agregarla al inicio
+      // Para simplificar y asegurar consistencia, recargamos o agregamos la respuesta
+      const savedNotification = {
+        id: response.data.id,
+        title: response.data.titulo,
+        message: response.data.mensaje,
+        type: response.data.tipo,
+        entityType: response.data.entity_type,
+        entityId: response.data.entity_id,
+        adminName: response.data.admin_name,
+        timestamp: response.data.created_at,
+        read: false
+      }
+      
+      notifications.value.unshift(savedNotification)
+      unreadCount.value++
+      
+    } catch (error) {
+      console.error('Error guardando notificación:', error)
+      // En caso de error, podríamos mostrar un toast de error o simplemente ignorar
     }
 
     return notification
@@ -131,36 +185,84 @@ export function useNotifications() {
   }
 
   // Marcar como leída
-  function markAsRead(notificationId) {
+  async function markAsRead(notificationId) {
     const notification = notifications.value.find(n => n.id === notificationId)
     if (notification && !notification.read) {
+      // Optimistic update
       notification.read = true
       unreadCount.value = Math.max(0, unreadCount.value - 1)
+      
+      try {
+        await http.put(`/admin/notificaciones/${notificationId}/read`)
+      } catch (error) {
+        console.error('Error marcando como leída:', error)
+        // Revertir si falla
+        notification.read = false
+        unreadCount.value++
+      }
     }
   }
 
   // Marcar todas como leídas
-  function markAllAsRead() {
+  async function markAllAsRead() {
+    const unread = notifications.value.filter(n => !n.read)
+    if (unread.length === 0) return
+
+    // Optimistic update
     notifications.value.forEach(n => n.read = true)
+    const oldCount = unreadCount.value
     unreadCount.value = 0
+    
+    try {
+      await http.put('/admin/notificaciones/read-all')
+    } catch (error) {
+      console.error('Error marcando todas como leídas:', error)
+      // Revertir parcialmente (complejo, mejor recargar)
+      unreadCount.value = oldCount
+      await fetchNotifications()
+    }
   }
 
   // Eliminar notificación
-  function removeNotification(notificationId) {
+  async function removeNotification(notificationId) {
     const index = notifications.value.findIndex(n => n.id === notificationId)
     if (index !== -1) {
       const notification = notifications.value[index]
+      
+      // Optimistic update
+      notifications.value.splice(index, 1)
       if (!notification.read) {
         unreadCount.value = Math.max(0, unreadCount.value - 1)
       }
-      notifications.value.splice(index, 1)
+      
+      try {
+        await http.delete(`/admin/notificaciones/${notificationId}`)
+      } catch (error) {
+        console.error('Error eliminando notificación:', error)
+        // Podríamos recargar la lista
+      }
     }
   }
 
   // Limpiar todas las notificaciones
-  function clearAll() {
+  async function clearAll() {
+    if (notifications.value.length === 0) return
+
+    // Optimistic update
+    const oldNotifications = [...notifications.value]
+    const oldCount = unreadCount.value
+    
     notifications.value = []
     unreadCount.value = 0
+    
+    try {
+      await http.delete('/admin/notificaciones')
+    } catch (error) {
+      console.error('Error limpiando notificaciones:', error)
+      // Revertir
+      notifications.value = oldNotifications
+      unreadCount.value = oldCount
+    }
   }
 
   // Obtener notificaciones recientes (últimas 5)
@@ -178,6 +280,8 @@ export function useNotifications() {
     unreadCount,
     recentNotifications,
     unreadNotifications,
+    isLoading,
+    fetchNotifications,
     addNotification,
     notifyCreated,
     notifyUpdated,
