@@ -320,7 +320,7 @@ function handleHistory() {
 
 <template>
   <AdminLayout 
-    page-title="Dashboard Administrativo"
+    page-title=""
     page-description="Bienvenido al panel de control de TrailynSafe"
     :notification-count="3"
     :loading="loading"
