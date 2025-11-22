@@ -32,8 +32,8 @@ coverage
 # Environment variables
 .env
 .env.local
-.env.production
 .env.*.local
+# .env.production - Railway necesita que esté en Git
 
 # Railway
 .railway
