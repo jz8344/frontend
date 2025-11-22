@@ -287,9 +287,7 @@ async function enviarCodigo() {
     });
     if (response.data.success === true) {
       step.value = 2;
-      success.value = 'Código enviado exitosamente a tu correo.';
-    } else {
-      error.value = 'Este correo no está registrado. Por favor verifica tu dirección de correo.';
+      success.value = 'Si el correo está registrado, recibirás un código de verificación.';
     }
   } catch (e) {
     error.value = e.response?.data?.error || 'Error al enviar el código. Inténtalo de nuevo.';
