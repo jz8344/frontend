@@ -561,7 +561,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, reactive, watch, computed, nextTick } from 'vue'
 import { API_BASE_URL } from '@/config/api'
 
 const props = defineProps({
@@ -1224,10 +1224,21 @@ function openMapModal(fieldKey) {
   selectedMapCoordinates.value = form[fieldKey + '_coordinates'] || ''
   showMapModal.value = true
   
-  // Cargar el mapa después de que el modal se renderice
-  setTimeout(() => {
-    initializeMap()
-  }, 300)
+  // Usar nextTick para asegurar que el DOM esté actualizado antes de inicializar el mapa
+  nextTick(() => {
+    // Doble timeout para garantizar que el contenedor esté completamente renderizado
+    setTimeout(() => {
+      const container = document.getElementById('google-map-container')
+      if (container && container.offsetHeight > 0) {
+        initializeMap()
+      } else {
+        console.error('El contenedor del mapa no está listo, reintentando...')
+        setTimeout(() => {
+          initializeMap()
+        }, 500)
+      }
+    }, 100)
+  })
 }
 
 function closeMapModal() {
@@ -1256,7 +1267,16 @@ async function initializeMap() {
   }
   
   const container = document.getElementById('google-map-container')
-  if (!container) return
+  if (!container) {
+    console.error('Contenedor del mapa no encontrado')
+    return
+  }
+  
+  // Asegurarse de que el contenedor tenga dimensiones válidas
+  if (container.offsetHeight === 0 || container.offsetWidth === 0) {
+    console.error('El contenedor del mapa no tiene dimensiones válidas')
+    return
+  }
   
   // Coordenadas por defecto (Ciudad de México)
   const defaultLocation = { lat: 19.432608, lng: -99.133209 }
