@@ -6,7 +6,7 @@ import axios from 'axios'
 import { useNotifications } from '@/composables/useNotifications'
 
 const router = useRouter()
-const { notifications, fetchNotifications, isLoading: loadingNotifications } = useNotifications()
+const { notifications, fetchNotifications, isLoading: loadingNotifications, markAsRead } = useNotifications()
 
 const loading = ref(false)
 const searchQuery = ref('')
@@ -54,12 +54,14 @@ async function updateRecentActivity() {
     }
 
     // Mapear las notificaciones al formato de actividad reciente
-    recentActivity.value = notifications.value.slice(0, 5).map(n => ({
+    recentActivity.value = notifications.value.slice(0, 10).map(n => ({
+      id: n.id,
       type: n.type,
       icon: getIconForType(n.entityType || n.type),
       color: getColorForType(n.type),
       message: n.message,
-      time: getTimeAgo(n.timestamp)
+      time: getTimeAgo(n.timestamp),
+      read: n.read
     }))
   } catch (error) {
     console.error('Error updating recent activity:', error)
@@ -398,14 +400,19 @@ function handleHistory() {
                 v-for="(activity, index) in recentActivity" 
                 :key="index"
                 class="list-group-item border-0 px-0"
+                @click="markAsRead(activity.id)"
+                style="cursor: pointer;"
               >
-                <div class="d-flex align-items-center">
-                  <div :class="`bg-${activity.color} bg-gradient`" class="rounded-circle p-2 me-3">
+                <div class="d-flex align-items-center" :class="{ 'opacity-75': activity.read }">
+                  <div :class="`bg-${activity.read ? 'secondary' : activity.color} bg-gradient`" class="rounded-circle p-2 me-3">
                     <i :class="activity.icon" class="text-white small"></i>
                   </div>
                   <div class="flex-grow-1">
-                    <p class="mb-1 small">{{ activity.message }}</p>
+                    <p class="mb-1 small" :class="{ 'text-muted': activity.read, 'fw-bold': !activity.read }">{{ activity.message }}</p>
                     <small class="text-muted">{{ activity.time }}</small>
+                  </div>
+                  <div v-if="!activity.read" class="ms-2">
+                    <span class="badge bg-primary rounded-pill" style="font-size: 0.5rem;">&nbsp;</span>
                   </div>
                 </div>
               </div>
