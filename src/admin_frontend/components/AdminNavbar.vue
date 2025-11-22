@@ -107,19 +107,19 @@
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
             <li><h6 class="dropdown-header">Sesión</h6></li>
             <li>
-              <a href="#" @click.prevent="navigateTo('/admin/perfil')" class="dropdown-item">
+              <router-link to="/admin/perfil" class="dropdown-item">
                 <i class="bi bi-person me-2"></i>Perfil
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="#" @click.prevent="navigateTo('/admin/configuracion')" class="dropdown-item">
+              <router-link to="/admin/configuracion" class="dropdown-item">
                 <i class="bi bi-gear me-2"></i>Configuración
-              </a>
+              </router-link>
             </li>
             <li>
-              <a href="#" @click.prevent="navigateTo('/admin/backups')" class="dropdown-item">
+              <router-link to="/admin/backups" class="dropdown-item">
                 <i class="bi bi-shield-check me-2"></i>Respaldos
-              </a>
+              </router-link>
             </li>
             <li>
               <a href="#" @click.prevent="showHistory" class="dropdown-item">

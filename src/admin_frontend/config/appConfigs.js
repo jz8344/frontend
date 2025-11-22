@@ -320,7 +320,7 @@ export const appConfigs = {
     singular: 'Unidad',
     description: 'Gestiona las unidades de transporte',
     icon: 'bi bi-bus-front',
-    searchFields: ['matricula', 'modelo', 'marca', 'numero_serie'],
+    searchFields: ['matricula', 'modelo', 'marca', 'numero_serie', 'color'],
     sortFields: [
       { key: 'matricula', label: 'Matrícula' },
       { key: 'marca', label: 'Marca' },
@@ -761,7 +761,7 @@ export const appConfigs = {
     singular: 'Viaje',
     description: 'Gestiona las rutas y viajes escolares',
     icon: 'bi bi-geo-alt-fill',
-    searchFields: ['nombre_ruta', 'escuela.nombre', 'chofer.nombre', 'unidad.numero_unidad'],
+    searchFields: ['nombre_ruta', 'escuela.nombre', 'chofer.nombre', 'chofer.apellidos', 'unidad.numero_unidad'],
     sortFields: [
       { key: 'fecha_viaje', label: 'Fecha' },
       { key: 'nombre_ruta', label: 'Nombre Ruta' },

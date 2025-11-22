@@ -27,55 +27,37 @@
 
         <!-- Right side: Sort and Column controls -->
         <div class="d-flex gap-2">
-          <!-- Sort Dropdown -->
-          <div class="dropdown">
-            <button 
-              class="btn btn-outline-secondary dropdown-toggle" 
-              type="button" 
-              data-bs-toggle="dropdown"
+          <!-- Sort Select -->
+          <div class="input-group" style="width: auto;">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-sort-down"></i>
+            </span>
+            <select 
+              class="form-select border-start-0 ps-0" 
+              :value="sortField ? `${sortField}:${sortDirection}` : ''"
+              @change="handleSortChange($event.target.value)"
+              style="max-width: 200px;"
             >
-              <i class="bi bi-sort-down me-1"></i>
-              Ordenar
-              <span v-if="sortField" class="badge bg-primary ms-1">
-                {{ sortableFields.find(f => f.key === sortField)?.label || config.displayFields?.find(f => f.key === sortField)?.label }}
-              </span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li class="dropdown-header">Ordenar por</li>
-              <li v-for="field in sortableFields" :key="field.key">
-                <a 
-                  class="dropdown-item" 
-                  href="#" 
-                  :class="{ 'active-sort': sortField === field.key && sortDirection === 'asc' }"
-                  @click.prevent="requestSort(field.key, 'asc')"
+              <option value="">Orden por defecto</option>
+              <optgroup label="Ascendente (A-Z)">
+                <option 
+                  v-for="field in sortableFields" 
+                  :key="field.key + '_asc'" 
+                  :value="`${field.key}:asc`"
                 >
-                  <i class="bi bi-sort-alpha-down me-2"></i>
-                  {{ field.label }} (A-Z)
-                </a>
-              </li>
-              <li v-for="field in sortableFields" :key="field.key + '_desc'">
-                <a 
-                  class="dropdown-item" 
-                  href="#" 
-                  :class="{ 'active-sort': sortField === field.key && sortDirection === 'desc' }"
-                  @click.prevent="requestSort(field.key, 'desc')"
+                  {{ field.label }}
+                </option>
+              </optgroup>
+              <optgroup label="Descendente (Z-A)">
+                <option 
+                  v-for="field in sortableFields" 
+                  :key="field.key + '_desc'" 
+                  :value="`${field.key}:desc`"
                 >
-                  <i class="bi bi-sort-alpha-up me-2"></i>
-                  {{ field.label }} (Z-A)
-                </a>
-              </li>
-              <li v-if="sortField"><hr class="dropdown-divider"></li>
-              <li v-if="sortField">
-                <a 
-                  class="dropdown-item text-muted" 
-                  href="#" 
-                  @click.prevent="requestSort('', '')"
-                >
-                  <i class="bi bi-arrow-clockwise me-2"></i>
-                  Limpiar ordenamiento
-                </a>
-              </li>
-            </ul>
+                  {{ field.label }}
+                </option>
+              </optgroup>
+            </select>
           </div>
 
           <!-- Column Visibility Dropdown (only for list view) -->
@@ -609,6 +591,15 @@ function getVisibleActions(item) {
 
 function handleCustomAction(action, item) {
   emit('customAction', { action, item })
+}
+
+function handleSortChange(value) {
+  if (!value) {
+    requestSort('', '')
+    return
+  }
+  const [field, direction] = value.split(':')
+  requestSort(field, direction)
 }
 
 function requestSort(field, direction = null) {
