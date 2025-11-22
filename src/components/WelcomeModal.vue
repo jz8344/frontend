@@ -159,22 +159,23 @@
                       <span class="text-danger">*</span>
                     </label>
                     <select 
-                      v-model="childrenForms[currentFormIndex].escuela"
+                      v-model="childrenForms[currentFormIndex].escuela_id"
+                      @change="updateEscuelaNombre(currentFormIndex)"
                       class="form-select form-select-lg"
-                      :class="{ 'is-invalid': formErrors[currentFormIndex]?.escuela }"
+                      :class="{ 'is-invalid': formErrors[currentFormIndex]?.escuela_id }"
                       :disabled="loadingEscuelas"
                     >
                       <option value="">{{ loadingEscuelas ? 'Cargando escuelas...' : 'Selecciona la escuela' }}</option>
                       <option 
                         v-for="escuela in escuelas" 
                         :key="escuela.id" 
-                        :value="escuela.nombre"
+                        :value="escuela.id"
                       >
                         {{ escuela.nombre }}
                       </option>
                     </select>
-                    <div v-if="formErrors[currentFormIndex]?.escuela" class="invalid-feedback">
-                      {{ formErrors[currentFormIndex].escuela }}
+                    <div v-if="formErrors[currentFormIndex]?.escuela_id" class="invalid-feedback">
+                      {{ formErrors[currentFormIndex].escuela_id }}
                     </div>
                     <small v-if="loadingEscuelas" class="text-muted">
                       <i class="bi bi-hourglass-split me-1"></i>Cargando lista de escuelas...
@@ -185,11 +186,25 @@
                   <div class="row mb-4">
                     <div class="col-md-6 mb-3 mb-md-0">
                       <label class="form-label fw-medium">Teléfono de emergencia 1</label>
-                      <input type="tel" maxlength="25" class="form-control form-control-lg" v-model="childrenForms[currentFormIndex].emergencia_1" placeholder="Ej. 5551234567" />
+                      <input 
+                        type="tel" 
+                        maxlength="10" 
+                        class="form-control form-control-lg" 
+                        v-model="childrenForms[currentFormIndex].emergencia_1" 
+                        @input="filterNumericInput($event, currentFormIndex, 'emergencia_1')"
+                        placeholder="Ej. 5551234567" 
+                      />
                     </div>
                     <div class="col-md-6">
                       <label class="form-label fw-medium">Teléfono de emergencia 2</label>
-                      <input type="tel" maxlength="25" class="form-control form-control-lg" v-model="childrenForms[currentFormIndex].emergencia_2" placeholder="Opcional" />
+                      <input 
+                        type="tel" 
+                        maxlength="10" 
+                        class="form-control form-control-lg" 
+                        v-model="childrenForms[currentFormIndex].emergencia_2" 
+                        @input="filterNumericInput($event, currentFormIndex, 'emergencia_2')"
+                        placeholder="Opcional" 
+                      />
                     </div>
                   </div>
 
@@ -398,6 +413,7 @@ function initializeForms() {
       nombre: '',
       grado: '',
       grupo: '',
+      escuela_id: '',
       escuela: '',
       emergencia_1: '',
       emergencia_2: '',
@@ -441,6 +457,22 @@ function validateName(index) {
   return true
 }
 
+// Filtrar solo números en campos de teléfono
+function filterNumericInput(event, index, field) {
+  const value = event.target.value
+  const numericValue = value.replace(/\D/g, '')
+  childrenForms.value[index][field] = numericValue
+}
+
+// Actualizar nombre de escuela cuando se selecciona el ID
+function updateEscuelaNombre(index) {
+  const escuelaId = childrenForms.value[index].escuela_id
+  const escuela = escuelas.value.find(e => e.id === escuelaId)
+  if (escuela) {
+    childrenForms.value[index].escuela = escuela.nombre
+  }
+}
+
 function validateCurrentForm() {
   const index = currentFormIndex.value
   const form = childrenForms.value[index]
@@ -467,8 +499,8 @@ function validateCurrentForm() {
   }
   
   // Validar escuela
-  if (!form.escuela) {
-    formErrors.value[index].escuela = 'La escuela es requerida'
+  if (!form.escuela_id) {
+    formErrors.value[index].escuela_id = 'La escuela es requerida'
     isValid = false
   }
   
