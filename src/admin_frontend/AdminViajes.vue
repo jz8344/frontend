@@ -274,21 +274,6 @@
               <small>Fecha hasta la que se repite el viaje (Lun-Vie)</small>
             </div>
 
-            <div v-if="!esViajeRecurrente" class="form-group full-width">
-              <label>Días de la Semana (viaje único)</label>
-              <div class="dias-semana">
-                <label v-for="dia in diasSemana" :key="dia.value" class="dia-checkbox">
-                  <input 
-                    type="checkbox" 
-                    :value="dia.value" 
-                    v-model="formData.dias_semana"
-                    :disabled="esViajeRecurrente">
-                  {{ dia.label }}
-                </label>
-              </div>
-              <small>Selecciona los días en que se realiza este viaje</small>
-            </div>
-
             <!-- Sección de Confirmación Automática -->
             <div class="form-group full-width">
               <label class="checkbox-label">
@@ -526,8 +511,9 @@ export default {
           this.formData.fecha_fin = fechaFin.toISOString().split('T')[0];
         }
       } else {
-        // Si no es recurrente, limpiar fecha_fin
+        // Si no es recurrente, limpiar fecha_fin y dias_semana
         this.formData.fecha_fin = '';
+        this.formData.dias_semana = [];
       }
     }
   },
