@@ -70,6 +70,20 @@
                   </div>
                 </div>
                 <div class="col-md-6">
+                  <label class="form-label fw-medium">Teléfono</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-white">
+                      <i class="bi bi-phone text-primary"></i>
+                    </span>
+                    <input 
+                      type="tel" 
+                      class="form-control" 
+                      v-model="form.telefono"
+                      placeholder="Tu teléfono"
+                    >
+                  </div>
+                </div>
+                <div class="col-md-6">
                   <label class="form-label fw-medium">Email</label>
                   <div class="input-group">
                     <span class="input-group-text bg-white">
@@ -293,7 +307,8 @@ const showConfirmPassword = ref(false)
 // Formularios
 const form = ref({
   nombre: '',
-  apellidos: ''
+  apellidos: '',
+  telefono: ''
 })
 
 const passwordForm = ref({
@@ -364,6 +379,7 @@ function loadAdminData() {
   if (adminData.value) {
     form.value.nombre = adminData.value.nombre || ''
     form.value.apellidos = adminData.value.apellidos || ''
+    form.value.telefono = adminData.value.telefono || ''
   }
 }
 
