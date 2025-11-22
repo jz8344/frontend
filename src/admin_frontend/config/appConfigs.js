@@ -7,24 +7,31 @@ export const appConfigs = {
     singular: 'Usuario',
     description: 'Gestiona los usuarios del sistema',
     icon: 'bi bi-people-fill',
-    searchFields: ['nombre', 'apellidos', 'correo'],
+    searchFields: ['nombre', 'apellidos', 'correo', 'telefono', 'rol'],
     sortFields: [
       { key: 'nombre', label: 'Nombre' },
       { key: 'apellidos', label: 'Apellidos' },
       { key: 'correo', label: 'Correo' },
+      { key: 'telefono', label: 'Teléfono' },
+      { key: 'rol', label: 'Rol' },
       { key: 'fecha_registro', label: 'Fecha de Registro' }
     ],
     displayFields: [
       { 
         key: 'nombre', 
-        label: 'Nombre Completo', 
+        label: 'Nombre', 
         type: 'avatar',
         icon: 'bi bi-person-circle',
-        getValue: (item) => `${item.nombre} ${item.apellidos}`,
         sortable: true
       },
+      { 
+        key: 'apellidos', 
+        label: 'Apellidos', 
+        icon: 'bi bi-person', 
+        sortable: true 
+      },
       { key: 'correo', label: 'Correo', icon: 'bi bi-envelope', sortable: true },
-      { key: 'telefono', label: 'Teléfono', icon: 'bi bi-phone', sortable: false },
+      { key: 'telefono', label: 'Teléfono', icon: 'bi bi-phone', sortable: true },
       { key: 'rol', label: 'Rol', type: 'badge', sortable: true },
       { key: 'fecha_registro', label: 'Fecha de Registro', type: 'date', sortable: true }
     ],
