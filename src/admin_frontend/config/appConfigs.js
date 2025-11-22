@@ -320,7 +320,7 @@ export const appConfigs = {
     singular: 'Unidad',
     description: 'Gestiona las unidades de transporte',
     icon: 'bi bi-bus-front',
-    searchFields: ['matricula', 'modelo', 'marca', 'numero_serie', 'color'],
+    searchFields: ['matricula', 'modelo', 'marca', 'numero_serie', 'color', 'capacidad', 'anio'],
     sortFields: [
       { key: 'matricula', label: 'Matrícula' },
       { key: 'marca', label: 'Marca' },
