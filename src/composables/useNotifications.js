@@ -244,25 +244,9 @@ export function useNotifications() {
     }
   }
 
-  // Limpiar todas las notificaciones
+  // Limpiar todas las notificaciones (Ahora se comporta como marcar todas como leídas)
   async function clearAll() {
-    if (notifications.value.length === 0) return
-
-    // Optimistic update
-    const oldNotifications = [...notifications.value]
-    const oldCount = unreadCount.value
-    
-    notifications.value = []
-    unreadCount.value = 0
-    
-    try {
-      await http.delete('/admin/notificaciones')
-    } catch (error) {
-      console.error('Error limpiando notificaciones:', error)
-      // Revertir
-      notifications.value = oldNotifications
-      unreadCount.value = oldCount
-    }
+    await markAllAsRead()
   }
 
   // Obtener notificaciones recientes (últimas 5)

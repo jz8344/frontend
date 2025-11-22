@@ -17,19 +17,11 @@
       <div class="notification-actions mb-3">
         <button 
           type="button" 
-          class="btn btn-sm btn-outline-primary"
-          @click="markAllAsRead"
+          class="btn btn-sm btn-outline-danger w-100"
+          @click="clearAll"
         >
           <i class="bi bi-check2-all me-1"></i>
           Marcar todas como leídas
-        </button>
-        <button 
-          type="button" 
-          class="btn btn-sm btn-outline-danger"
-          @click="clearAll"
-        >
-          <i class="bi bi-trash me-1"></i>
-          Limpiar todo
         </button>
       </div>
       
@@ -61,13 +53,6 @@
               </span>
             </div>
           </div>
-          <button 
-            type="button" 
-            class="btn-remove" 
-            @click.stop="removeNotification(notification.id)"
-          >
-            <i class="bi bi-x-lg"></i>
-          </button>
         </div>
       </div>
     </div>
