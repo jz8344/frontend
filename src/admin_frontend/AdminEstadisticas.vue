@@ -52,6 +52,7 @@
         </div>
 
         <div v-else>
+          <!-- Tarjetas de Resumen -->
           <div class="row mb-4">
             <div class="col-md-3 mb-3">
               <div class="card stats-card bg-primary text-white">
@@ -120,17 +121,87 @@
                 </div>
               </div>
             </div>
+
+            <!-- Segunda fila de tarjetas -->
+            <div class="col-md-3 mb-3">
+              <div class="card stats-card bg-secondary text-white">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h4 class="card-title mb-0">{{ totales.escuelas }}</h4>
+                      <p class="card-text mb-0">Escuelas</p>
+                      <small class="opacity-75">Instituciones registradas</small>
+                    </div>
+                    <div class="stats-icon">
+                      <i class="bi bi-building"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <div class="card stats-card bg-danger text-white">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h4 class="card-title mb-0">{{ totales.viajes }}</h4>
+                      <p class="card-text mb-0">Viajes</p>
+                      <small class="opacity-75">Total histórico</small>
+                    </div>
+                    <div class="stats-icon">
+                      <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <div class="card stats-card bg-dark text-white">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h4 class="card-title mb-0">{{ totales.backups }}</h4>
+                      <p class="card-text mb-0">Respaldos</p>
+                      <small class="opacity-75">Copias de seguridad</small>
+                    </div>
+                    <div class="stats-icon">
+                      <i class="bi bi-database-fill"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+              <div class="card stats-card bg-primary bg-gradient text-white">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h4 class="card-title mb-0">{{ totales.rutas }}</h4>
+                      <p class="card-text mb-0">Rutas</p>
+                      <small class="opacity-75">Rutas configuradas</small>
+                    </div>
+                    <div class="stats-icon">
+                      <i class="bi bi-map-fill"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
+          <!-- Gráficos y Tablas -->
           <div class="row mb-4">
-            <div class="col-md-6 mb-4">
+            <!-- Rutas por Estado -->
+            <div class="col-md-4 mb-4">
               <div class="card h-100">
                 <div class="card-header d-flex justify-content-between align-items-center">
                   <h5 class="mb-0">
                     <i class="bi bi-geo-alt text-primary me-2"></i>
                     Rutas por Estado
                   </h5>
-                  <span class="badge bg-primary">{{ totales.rutas }} total</span>
                 </div>
                 <div class="card-body">
                   <div v-if="estadosRutas.length > 0">
@@ -139,8 +210,8 @@
                         <thead>
                           <tr>
                             <th>Estado</th>
-                            <th class="text-center">Cantidad</th>
-                            <th class="text-center">Porcentaje</th>
+                            <th class="text-center">Cant.</th>
+                            <th class="text-center">%</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -172,13 +243,60 @@
                 </div>
               </div>
             </div>
+
+            <!-- Escuelas por Nivel -->
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h5 class="mb-0">
+                    <i class="bi bi-building text-secondary me-2"></i>
+                    Escuelas por Nivel
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div v-if="escuelasPorNivel.length > 0">
+                    <div class="table-responsive">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Nivel</th>
+                            <th class="text-center">Cant.</th>
+                            <th class="text-center">%</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="nivel in escuelasPorNivel" :key="nivel.nombre">
+                            <td>{{ nivel.nombre }}</td>
+                            <td class="text-center">{{ nivel.cantidad }}</td>
+                            <td class="text-center">
+                              <div class="progress progress-sm">
+                                <div 
+                                  class="progress-bar bg-secondary" 
+                                  :style="`width: ${nivel.porcentaje}%`"
+                                ></div>
+                              </div>
+                              <small>{{ nivel.porcentaje }}%</small>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div v-else class="text-center text-muted py-4">
+                    <i class="bi bi-building fs-1"></i>
+                    <p class="mt-2">No hay escuelas registradas</p>
+                  </div>
+                </div>
+              </div>
+            </div>
             
-            <div class="col-md-6 mb-4">
+            <!-- Actividad del Sistema -->
+            <div class="col-md-4 mb-4">
               <div class="card h-100">
                 <div class="card-header">
                   <h5 class="mb-0">
                     <i class="bi bi-activity text-success me-2"></i>
-                    Actividad del Sistema
+                    Actividad de Hoy
                   </h5>
                 </div>
                 <div class="card-body">
@@ -188,7 +306,7 @@
                         <i class="bi bi-person-plus"></i>
                       </div>
                       <div class="activity-content">
-                        <strong>Usuarios registrados hoy</strong>
+                        <strong>Usuarios registrados</strong>
                         <span class="badge bg-primary ms-2">{{ actividadHoy.usuarios }}</span>
                       </div>
                     </div>
@@ -200,6 +318,16 @@
                       <div class="activity-content">
                         <strong>Rutas activas</strong>
                         <span class="badge bg-success ms-2">{{ actividadHoy.rutasActivas }}</span>
+                      </div>
+                    </div>
+
+                    <div class="activity-item">
+                      <div class="activity-icon bg-danger">
+                        <i class="bi bi-geo-alt"></i>
+                      </div>
+                      <div class="activity-content">
+                        <strong>Viajes programados</strong>
+                        <span class="badge bg-danger ms-2">{{ actividadHoy.viajesHoy }}</span>
                       </div>
                     </div>
                     
@@ -218,8 +346,9 @@
             </div>
           </div>
 
+          <!-- Listas Recientes -->
           <div class="row">
-            <div class="col-md-6 mb-4">
+            <div class="col-md-4 mb-4">
               <div class="card h-100">
                 <div class="card-header">
                   <h5 class="mb-0">
@@ -256,7 +385,7 @@
               </div>
             </div>
 
-            <div class="col-md-6 mb-4">
+            <div class="col-md-4 mb-4">
               <div class="card h-100">
                 <div class="card-header">
                   <h5 class="mb-0">
@@ -291,6 +420,38 @@
                 </div>
               </div>
             </div>
+
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <div class="card-header">
+                  <h5 class="mb-0">
+                    <i class="bi bi-database text-dark me-2"></i>
+                    Últimos Respaldos
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div v-if="backupsRecientes.length > 0">
+                    <div class="list-group list-group-flush">
+                      <div 
+                        v-for="backup in backupsRecientes" 
+                        :key="backup.id"
+                        class="list-group-item d-flex justify-content-between align-items-center px-0"
+                      >
+                        <div>
+                          <div class="fw-medium">{{ backup.nombre || 'Backup' }}</div>
+                          <small class="text-muted">{{ backup.tamano_formateado || (backup.tamano + ' bytes') }}</small>
+                        </div>
+                        <small class="text-muted">{{ formatearFecha(backup.created_at) }}</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else class="text-center text-muted py-4">
+                    <i class="bi bi-database fs-1"></i>
+                    <p class="mt-2">No hay respaldos recientes</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -313,14 +474,22 @@ const totales = reactive({
   hijos: 0,
   choferes: 0,
   unidades: 0,
-  rutas: 0
+  rutas: 0,
+  escuelas: 0,
+  viajes: 0,
+  backups: 0
 })
 
 const estadosRutas = ref([])
+const escuelasPorNivel = ref([])
+const viajesPorEstado = ref([])
+const backupsRecientes = ref([])
+
 const actividadHoy = reactive({
   usuarios: 0,
   rutasActivas: 0,
-  unidadesActivas: 0
+  unidadesActivas: 0,
+  viajesHoy: 0
 })
 
 const usuariosRecientes = ref([])
@@ -332,12 +501,15 @@ async function cargarDatos() {
   
   try {
     // Cargar datos de todas las entidades en paralelo
-    const [usuariosRes, hijosRes, choferesRes, unidadesRes, rutasRes] = await Promise.all([
+    const [usuariosRes, hijosRes, choferesRes, unidadesRes, rutasRes, escuelasRes, viajesRes, backupsRes] = await Promise.all([
       http.get('/admin/usuarios'),
       http.get('/admin/hijos'), 
       http.get('/admin/choferes'),
       http.get('/admin/unidades'),
-      http.get('/admin/rutas')
+      http.get('/admin/rutas'),
+      http.get('/admin/escuelas'),
+      http.get('/admin/viajes'),
+      http.get('/admin/backups')
     ])
 
     // Actualizar totales
@@ -346,11 +518,13 @@ async function cargarDatos() {
     totales.choferes = choferesRes.data?.length || 0
     totales.unidades = unidadesRes.data?.length || 0
     totales.rutas = rutasRes.data?.length || 0
+    totales.escuelas = escuelasRes.data?.length || 0
+    totales.viajes = viajesRes.data?.length || 0
+    totales.backups = backupsRes.data?.length || 0
 
     // Procesar datos de rutas
     const rutas = rutasRes.data || []
     if (rutas.length > 0) {
-      // Calcular estadísticas de rutas por estado
       const estadosCount = {}
       rutas.forEach(ruta => {
         const estado = ruta.estado || 'sin_estado'
@@ -363,10 +537,8 @@ async function cargarDatos() {
         porcentaje: Math.round((cantidad / rutas.length) * 100)
       }))
 
-      // Rutas activas
       actividadHoy.rutasActivas = rutas.filter(r => r.estado === 'activa').length
       
-      // Rutas recientes (últimas 5)
       rutasRecientes.value = rutas
         .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
         .slice(0, 5)
@@ -376,17 +548,68 @@ async function cargarDatos() {
       rutasRecientes.value = []
     }
 
+    // Procesar datos de escuelas
+    const escuelas = escuelasRes.data || []
+    if (escuelas.length > 0) {
+      const nivelesCount = {}
+      escuelas.forEach(escuela => {
+        const nivel = escuela.nivel || 'sin_nivel'
+        nivelesCount[nivel] = (nivelesCount[nivel] || 0) + 1
+      })
+
+      escuelasPorNivel.value = Object.entries(nivelesCount).map(([nombre, cantidad]) => ({
+        nombre: nombre.charAt(0).toUpperCase() + nombre.slice(1).replace('_', ' '),
+        cantidad,
+        porcentaje: Math.round((cantidad / escuelas.length) * 100)
+      }))
+    } else {
+      escuelasPorNivel.value = []
+    }
+
+    // Procesar datos de viajes
+    const viajes = viajesRes.data || []
+    if (viajes.length > 0) {
+      const estadosViajesCount = {}
+      viajes.forEach(viaje => {
+        const estado = viaje.estado || 'sin_estado'
+        estadosViajesCount[estado] = (estadosViajesCount[estado] || 0) + 1
+      })
+
+      viajesPorEstado.value = Object.entries(estadosViajesCount).map(([nombre, cantidad]) => ({
+        nombre: nombre.charAt(0).toUpperCase() + nombre.slice(1).replace('_', ' '),
+        cantidad,
+        porcentaje: Math.round((cantidad / viajes.length) * 100)
+      }))
+
+      const hoy = new Date().toDateString()
+      actividadHoy.viajesHoy = viajes.filter(v => {
+        const fechaViaje = v.fecha_viaje ? new Date(v.fecha_viaje).toDateString() : null
+        return fechaViaje === hoy
+      }).length
+    } else {
+      viajesPorEstado.value = []
+      actividadHoy.viajesHoy = 0
+    }
+
+    // Procesar datos de backups
+    const backups = backupsRes.data || []
+    if (backups.length > 0) {
+      backupsRecientes.value = backups
+        .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+        .slice(0, 5)
+    } else {
+      backupsRecientes.value = []
+    }
+
     // Procesar datos de usuarios
     const usuarios = usuariosRes.data || []
     if (usuarios.length > 0) {
-      // Usuarios registrados hoy
       const hoy = new Date().toDateString()
       actividadHoy.usuarios = usuarios.filter(u => {
         const fechaRegistro = u.fecha_registro ? new Date(u.fecha_registro).toDateString() : null
         return fechaRegistro === hoy
       }).length
 
-      // Usuarios recientes (últimos 5)
       usuariosRecientes.value = usuarios
         .filter(u => u.rol === 'usuario')
         .sort((a, b) => new Date(b.fecha_registro || 0) - new Date(a.fecha_registro || 0))
@@ -396,7 +619,6 @@ async function cargarDatos() {
       usuariosRecientes.value = []
     }
 
-    // Unidades activas (estimación basada en rutas activas)
     actividadHoy.unidadesActivas = Math.min(actividadHoy.rutasActivas, totales.unidades)
 
   } catch (err) {
