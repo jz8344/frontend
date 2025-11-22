@@ -60,8 +60,17 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="viaje in viajes" :key="viaje.id">
-            <td>{{ formatDate(viaje.fecha_viaje) }}</td>
+          <tr v-for="viaje in viajes" :key="viaje.id" :class="{'row-plantilla': viaje.es_plantilla}">
+            <td>
+              <div v-if="viaje.es_plantilla">
+                <span class="badge badge-recurrente">🔄 Recurrente</span>
+                <div class="dias-small">{{ formatDiasSemana(viaje.dias_semana) }}</div>
+              </div>
+              <div v-else>
+                {{ formatDate(viaje.fecha_viaje) }}
+                <div v-if="viaje.parent_viaje_id" class="badge-instancia">📌 Instancia</div>
+              </div>
+            </td>
             <td>{{ viaje.nombre_ruta }}</td>
             <td>{{ viaje.escuela?.nombre || 'N/A' }}</td>
             <td>{{ viaje.chofer ? `${viaje.chofer.nombre} ${viaje.chofer.apellidos}` : 'Sin asignar' }}</td>
@@ -73,7 +82,8 @@
               </div>
             </td>
             <td>
-              <span class="badge">{{ viaje.ninos_confirmados || 0 }} / {{ viaje.capacidad_maxima }}</span>
+              <span v-if="!viaje.es_plantilla" class="badge">{{ viaje.ninos_confirmados || 0 }} / {{ viaje.capacidad_maxima }}</span>
+              <span v-else class="badge badge-secondary">Plantilla</span>
             </td>
             <td>
               <span :class="'status-badge status-' + viaje.estado">
@@ -86,28 +96,28 @@
                   👁️
                 </button>
                 <button 
-                  v-if="viaje.estado === 'pendiente' || viaje.estado === 'confirmaciones_abiertas'"
+                  v-if="viaje.es_plantilla || viaje.estado === 'pendiente' || viaje.estado === 'confirmaciones_abiertas'"
                   @click="openModal('edit', viaje)" 
                   class="btn-icon" 
                   title="Editar">
                   ✏️
                 </button>
                 <button 
-                  v-if="viaje.estado === 'pendiente'"
+                  v-if="!viaje.es_plantilla && viaje.estado === 'pendiente'"
                   @click="abrirConfirmaciones(viaje.id)" 
                   class="btn-icon btn-success" 
                   title="Abrir confirmaciones">
                   🔓
                 </button>
                 <button 
-                  v-if="viaje.estado === 'confirmaciones_abiertas'"
+                  v-if="!viaje.es_plantilla && viaje.estado === 'confirmaciones_abiertas'"
                   @click="cerrarConfirmaciones(viaje.id)" 
                   class="btn-icon btn-warning" 
                   title="Cerrar confirmaciones">
                   🔒
                 </button>
                 <button 
-                  v-if="viaje.estado !== 'en_curso' && viaje.estado !== 'completado'"
+                  v-if="viaje.es_plantilla || (viaje.estado !== 'en_curso' && viaje.estado !== 'completado')"
                   @click="deleteViaje(viaje.id)" 
                   class="btn-icon btn-danger" 
                   title="Eliminar">
@@ -190,12 +200,13 @@
             </div>
 
             <div class="form-group">
-              <label>Fecha del Viaje *</label>
+              <label>{{ esViajeRecurrente ? 'Fecha de Inicio *' : 'Fecha del Viaje *' }}</label>
               <input 
                 type="date" 
                 v-model="formData.fecha_viaje" 
                 required
                 :min="today">
+              <small v-if="esViajeRecurrente">Fecha a partir de la cual comienza la recurrencia</small>
             </div>
 
             <div class="form-group">
@@ -640,6 +651,7 @@ export default {
       try {
         // Preparar datos para enviar
         const dataToSend = { ...this.formData };
+        dataToSend.es_recurrente = this.esViajeRecurrente;
         
         // Si no hay unidad, asegurar que capacidad_maxima sea requerida
         if (!dataToSend.unidad_id && !dataToSend.capacidad_maxima) {
@@ -691,6 +703,18 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    formatDiasSemana(dias) {
+        if (!dias || dias.length === 0) return 'N/A';
+        // Ordenar días: Lun(1)..Sáb(6), Dom(0)
+        const diasOrdenados = [...dias].sort((a, b) => {
+            const aVal = a === 0 ? 7 : a;
+            const bVal = b === 0 ? 7 : b;
+            return aVal - bVal;
+        });
+        
+        const map = {0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb'};
+        return diasOrdenados.map(d => map[d]).join(', ');
     },
     async deleteViaje(id) {
       const viaje = this.viajes.find(v => v.id === id);
