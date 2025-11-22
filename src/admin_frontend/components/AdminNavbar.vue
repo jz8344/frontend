@@ -107,19 +107,19 @@
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
             <li><h6 class="dropdown-header">Sesión</h6></li>
             <li>
-              <router-link to="/admin/perfil" class="dropdown-item">
+              <a href="#" @click.prevent="navigateTo('/admin/perfil')" class="dropdown-item">
                 <i class="bi bi-person me-2"></i>Perfil
-              </router-link>
+              </a>
             </li>
             <li>
-              <router-link to="/admin/configuracion" class="dropdown-item">
+              <a href="#" @click.prevent="navigateTo('/admin/configuracion')" class="dropdown-item">
                 <i class="bi bi-gear me-2"></i>Configuración
-              </router-link>
+              </a>
             </li>
             <li>
-              <router-link to="/admin/backups" class="dropdown-item">
+              <a href="#" @click.prevent="navigateTo('/admin/backups')" class="dropdown-item">
                 <i class="bi bi-shield-check me-2"></i>Respaldos
-              </router-link>
+              </a>
             </li>
             <li>
               <a href="#" @click.prevent="showHistory" class="dropdown-item">
@@ -318,6 +318,10 @@ function gotoApp(key) {
     router.push(route)
   }
   sidebarOpen.value = false
+}
+
+function navigateTo(path) {
+  router.push(path)
 }
 
 function performSearch() {
