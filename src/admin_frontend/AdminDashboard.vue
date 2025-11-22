@@ -1,106 +1,73 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AdminLayout from './layouts/AdminLayout.vue'
 import axios from 'axios'
-
+import { useNotifications } from '@/composables/useNotifications'
 
 const router = useRouter()
+const { notifications, fetchNotifications, isLoading: loadingNotifications } = useNotifications()
 
- 
 const loading = ref(false)
 const searchQuery = ref('')
 const recentActivity = ref([])
 const systemAlerts = ref([])
 const loadingActivity = ref(true)
 
- 
 router.afterEach(() => {
   loading.value = false
 })
 
- 
-async function fetchRecentActivity() {
+function getIconForType(type) {
+  const icons = {
+    'success': 'bi-check-circle',
+    'info': 'bi-info-circle',
+    'warning': 'bi-exclamation-triangle',
+    'danger': 'bi-x-circle',
+    'escuela': 'bi-building',
+    'unidad': 'bi-bus-front',
+    'chofer': 'bi-person-vcard',
+    'viaje': 'bi-geo-alt',
+    'usuario': 'bi-person',
+    'hijo': 'bi-person-heart',
+    'respaldo': 'bi-database'
+  }
+  return icons[type] || 'bi-bell'
+}
+
+function getColorForType(type) {
+  const colors = {
+    'success': 'success',
+    'info': 'info',
+    'warning': 'warning',
+    'danger': 'danger'
+  }
+  return colors[type] || 'primary'
+}
+
+async function updateRecentActivity() {
+  loadingActivity.value = true
   try {
-    loadingActivity.value = true
-    
-    
-    const usersResponse = await axios.get('/api/usuarios?limit=2&sort=created_at,desc')
-    
-    
-    const unidadesResponse = await axios.get('/api/unidades?limit=2&sort=updated_at,desc')
-    
-    
-    const choferesResponse = await axios.get('/api/choferes?limit=1&sort=created_at,desc')
-    
-    const activities = []
-    
-    
-    if (usersResponse.data.data) {
-      usersResponse.data.data.forEach(user => {
-        activities.push({
-          type: 'user',
-          icon: 'bi-person-plus',
-          color: 'success',
-          message: `Nuevo usuario registrado: ${user.nombre}`,
-          time: getTimeAgo(user.created_at)
-        })
-      })
+    // Asegurarnos de tener las notificaciones más recientes
+    if (notifications.value.length === 0) {
+      await fetchNotifications()
     }
-    
-    
-    if (unidadesResponse.data.data) {
-      unidadesResponse.data.data.forEach(unidad => {
-        activities.push({
-          type: 'unidad',
-          icon: 'bi-bus-front',
-          color: 'warning',
-          message: `Unidad actualizada: ${unidad.numero_unidad}`,
-          time: getTimeAgo(unidad.updated_at)
-        })
-      })
-    }
-    
-    
-    if (choferesResponse.data.data) {
-      choferesResponse.data.data.forEach(chofer => {
-        activities.push({
-          type: 'chofer',
-          icon: 'bi-person-vcard',
-          color: 'primary',
-          message: `Nuevo chofer registrado: ${chofer.nombre}`,
-          time: getTimeAgo(chofer.created_at)
-        })
-      })
-    }
-    
-    
-    activities.sort((a, b) => {
-      const timeA = parseTimeAgo(a.time)
-      const timeB = parseTimeAgo(b.time)
-      return timeA - timeB
-    })
-    
-    recentActivity.value = activities.slice(0, 3) // Solo mostrar los 3 más recientes
-    
+
+    // Mapear las notificaciones al formato de actividad reciente
+    recentActivity.value = notifications.value.slice(0, 5).map(n => ({
+      type: n.type,
+      icon: getIconForType(n.entityType || n.type),
+      color: getColorForType(n.type),
+      message: n.message,
+      time: getTimeAgo(n.timestamp)
+    }))
   } catch (error) {
-    console.error('Error fetching recent activity:', error)
-    
-    recentActivity.value = [
-      {
-        type: 'system',
-        icon: 'bi-exclamation-triangle',
-        color: 'warning',
-        message: 'Error al cargar actividad reciente',
-        time: 'hace unos momentos'
-      }
-    ]
+    console.error('Error updating recent activity:', error)
   } finally {
     loadingActivity.value = false
   }
 }
 
- 
 async function fetchSystemAlerts() {
   try {
     const alerts = []
@@ -214,20 +181,15 @@ function getTimeAgo(dateString) {
   return `hace ${Math.floor(diffInSeconds / 2592000)} meses`
 }
 
- 
-function parseTimeAgo(timeString) {
-  if (timeString.includes('momentos')) return 0
-  if (timeString.includes('minutos')) return parseInt(timeString.match(/\d+/)[0])
-  if (timeString.includes('horas')) return parseInt(timeString.match(/\d+/)[0]) * 60
-  if (timeString.includes('días')) return parseInt(timeString.match(/\d+/)[0]) * 24 * 60
-  return 999999 // Para fechas muy antiguas
-}
-
- 
 onMounted(() => {
-  fetchRecentActivity()
+  updateRecentActivity()
   fetchSystemAlerts()
 })
+
+// Observar cambios en las notificaciones para actualizar la actividad reciente
+watch(notifications, () => {
+  updateRecentActivity()
+}, { deep: true })
 
 const cards = [
   {
