@@ -935,6 +935,266 @@ export const appConfigs = {
         globalAction: true
       }
     ]
+  },
+
+  viajes: {
+    name: 'Viajes',
+    singular: 'Viaje',
+    description: 'Gestiona las rutas de transporte escolar',
+    icon: 'bi bi-bus-front-fill',
+    searchFields: ['nombre_ruta', 'tipo_viaje', 'estado'],
+    sortFields: [
+      { key: 'nombre_ruta', label: 'Nombre de Ruta' },
+      { key: 'fecha_especifica', label: 'Fecha' },
+      { key: 'horario_salida', label: 'Horario' },
+      { key: 'estado', label: 'Estado' },
+      { key: 'tipo_viaje', label: 'Tipo' }
+    ],
+    displayFields: [
+      { 
+        key: 'nombre_ruta', 
+        label: 'Ruta', 
+        type: 'avatar',
+        icon: 'bi bi-signpost-2-fill',
+        sortable: true
+      },
+      { 
+        key: 'tipo_viaje', 
+        label: 'Tipo', 
+        type: 'badge', 
+        sortable: true,
+        badgeMap: {
+          'unico': { text: 'Único', variant: 'info' },
+          'recurrente': { text: 'Recurrente', variant: 'primary' }
+        }
+      },
+      { 
+        key: 'escuela.nombre', 
+        label: 'Escuela', 
+        icon: 'bi bi-building',
+        sortable: false 
+      },
+      { 
+        key: 'horario_salida', 
+        label: 'Horario', 
+        icon: 'bi bi-clock',
+        sortable: true 
+      },
+      { 
+        key: 'turno', 
+        label: 'Turno', 
+        type: 'badge',
+        sortable: true,
+        badgeMap: {
+          'matutino': { text: 'Matutino', variant: 'warning' },
+          'vespertino': { text: 'Vespertino', variant: 'info' }
+        }
+      },
+      { 
+        key: 'capacidad_info', 
+        label: 'Capacidad', 
+        icon: 'bi bi-people',
+        format: (item) => `${item.capacidad_actual}/${item.capacidad_maxima}`,
+        sortable: false 
+      },
+      { 
+        key: 'estado', 
+        label: 'Estado', 
+        type: 'badge', 
+        sortable: true,
+        badgeMap: {
+          'abierto': { text: 'Abierto', variant: 'success' },
+          'cerrado': { text: 'Cerrado', variant: 'secondary' },
+          'en_curso': { text: 'En Curso', variant: 'primary' },
+          'completado': { text: 'Completado', variant: 'info' },
+          'cancelado': { text: 'Cancelado', variant: 'danger' }
+        }
+      }
+    ],
+    fields: [
+      {
+        key: 'nombre_ruta',
+        label: 'Nombre de la Ruta',
+        type: 'text',
+        required: true,
+        placeholder: 'Ej: Ruta Centro - Escuela Primaria',
+        icon: 'bi bi-signpost-2',
+        colClass: 'col-12',
+        maxlength: 100
+      },
+      {
+        key: 'tipo_viaje',
+        label: 'Tipo de Viaje',
+        type: 'select',
+        required: true,
+        options: [
+          { value: 'unico', label: 'Único (fecha específica)' },
+          { value: 'recurrente', label: 'Recurrente (días de la semana)' }
+        ],
+        icon: 'bi bi-calendar-check',
+        colClass: 'col-md-6',
+        help: 'Selecciona si el viaje es para una fecha específica o se repite semanalmente'
+      },
+      {
+        key: 'escuela_id',
+        label: 'Escuela',
+        type: 'autocomplete',
+        required: true,
+        apiEndpoint: '/admin/escuelas',
+        displayField: 'nombre',
+        searchFields: ['nombre', 'clave'],
+        icon: 'bi bi-building',
+        colClass: 'col-md-6',
+        placeholder: 'Buscar escuela...',
+        help: 'Selecciona la escuela destino del viaje'
+      },
+      {
+        key: 'unidad_id',
+        label: 'Unidad',
+        type: 'autocomplete',
+        required: true,
+        apiEndpoint: '/admin/unidades',
+        displayField: 'matricula',
+        secondaryField: 'modelo',
+        searchFields: ['matricula', 'modelo'],
+        icon: 'bi bi-bus-front',
+        colClass: 'col-md-6',
+        placeholder: 'Buscar unidad...',
+        help: 'Selecciona el vehículo asignado'
+      },
+      {
+        key: 'chofer_id',
+        label: 'Chofer',
+        type: 'autocomplete',
+        required: true,
+        apiEndpoint: '/admin/choferes',
+        displayField: 'nombre',
+        secondaryField: 'apellidos',
+        searchFields: ['nombre', 'apellidos', 'numero_licencia'],
+        icon: 'bi bi-person-vcard',
+        colClass: 'col-md-6',
+        placeholder: 'Buscar chofer...',
+        help: 'Selecciona el conductor asignado'
+      },
+      {
+        key: 'fecha_especifica',
+        label: 'Fecha del Viaje',
+        type: 'date',
+        required: false,
+        icon: 'bi bi-calendar-event',
+        colClass: 'col-md-6',
+        showIf: { field: 'tipo_viaje', value: 'unico' },
+        help: 'Fecha única en la que se realizará el viaje'
+      },
+      {
+        key: 'dias_activos',
+        label: 'Días Activos',
+        type: 'multi-select',
+        required: false,
+        options: [
+          { value: 'Lunes', label: 'Lunes' },
+          { value: 'Martes', label: 'Martes' },
+          { value: 'Miércoles', label: 'Miércoles' },
+          { value: 'Jueves', label: 'Jueves' },
+          { value: 'Viernes', label: 'Viernes' },
+          { value: 'Sábado', label: 'Sábado' },
+          { value: 'Domingo', label: 'Domingo' }
+        ],
+        icon: 'bi bi-calendar-week',
+        colClass: 'col-12',
+        showIf: { field: 'tipo_viaje', value: 'recurrente' },
+        help: 'Selecciona los días de la semana en que opera el viaje'
+      },
+      {
+        key: 'fecha_inicio_vigencia',
+        label: 'Fecha Inicio Vigencia',
+        type: 'date',
+        required: false,
+        icon: 'bi bi-calendar-check',
+        colClass: 'col-md-6',
+        showIf: { field: 'tipo_viaje', value: 'recurrente' },
+        help: 'Fecha desde la que el viaje estará activo'
+      },
+      {
+        key: 'fecha_fin_vigencia',
+        label: 'Fecha Fin Vigencia',
+        type: 'date',
+        required: false,
+        icon: 'bi bi-calendar-x',
+        colClass: 'col-md-6',
+        showIf: { field: 'tipo_viaje', value: 'recurrente' },
+        help: 'Fecha hasta la que el viaje estará activo'
+      },
+      {
+        key: 'horario_salida',
+        label: 'Horario de Salida',
+        type: 'time',
+        required: true,
+        icon: 'bi bi-clock',
+        colClass: 'col-md-6',
+        help: 'Hora a la que sale el transporte'
+      },
+      {
+        key: 'turno',
+        label: 'Turno',
+        type: 'select',
+        required: true,
+        options: [
+          { value: 'matutino', label: 'Matutino' },
+          { value: 'vespertino', label: 'Vespertino' }
+        ],
+        icon: 'bi bi-sun',
+        colClass: 'col-md-6'
+      },
+      {
+        key: 'estado',
+        label: 'Estado del Viaje',
+        type: 'select',
+        required: false,
+        options: [
+          { value: 'abierto', label: 'Abierto' },
+          { value: 'cerrado', label: 'Cerrado' },
+          { value: 'en_curso', label: 'En Curso' },
+          { value: 'completado', label: 'Completado' },
+          { value: 'cancelado', label: 'Cancelado' }
+        ],
+        icon: 'bi bi-check-circle',
+        colClass: 'col-md-6',
+        editOnly: true,
+        help: 'Estado actual del viaje'
+      },
+      {
+        key: 'descripcion',
+        label: 'Descripción',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Información adicional del viaje...',
+        icon: 'bi bi-card-text',
+        colClass: 'col-12',
+        rows: 2,
+        maxlength: 500
+      },
+      {
+        key: 'notas',
+        label: 'Notas Administrativas',
+        type: 'textarea',
+        required: false,
+        placeholder: 'Notas internas...',
+        icon: 'bi bi-pencil-square',
+        colClass: 'col-12',
+        rows: 2,
+        maxlength: 500
+      }
+    ],
+    customActions: [
+      {
+        name: 'ver_solicitudes',
+        label: 'Ver Solicitudes',
+        icon: 'bi bi-list-check',
+        type: 'info',
+        itemAction: true
+      }
+    ]
   }
 }
 
