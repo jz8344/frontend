@@ -79,30 +79,42 @@
           </div>
 
           <!-- Column Visibility Dropdown (only for list view) -->
-          <div v-if="viewMode === 'list'" class="dropdown">
+          <div v-if="viewMode === 'list'" class="dropdown" ref="columnsDropdownRef">
             <button 
               class="btn btn-outline-secondary dropdown-toggle" 
               type="button" 
-              data-bs-toggle="dropdown"
+              @click="toggleColumnMenu"
+              :class="{ 'show': showColumnMenu }"
+              :aria-expanded="showColumnMenu"
             >
               <i class="bi bi-columns me-1"></i>
               Columnas
             </button>
-            <ul class="dropdown-menu dropdown-menu-end p-2" style="min-width: 200px;">
+            <ul 
+              class="dropdown-menu dropdown-menu-end p-2" 
+              :class="{ 'show': showColumnMenu }"
+              style="min-width: 250px; max-height: 400px; overflow-y: auto;"
+            >
               <li class="dropdown-header">Mostrar/Ocultar Columnas</li>
-              <li v-for="field in config.displayFields || []" :key="field.key" class="dropdown-item-text">
-                <div class="form-check">
-                  <input 
-                    class="form-check-input" 
-                    type="checkbox" 
-                    :id="'col-' + field.key"
-                    v-model="visibleColumns[field.key]"
-                  >
-                  <label class="form-check-label" :for="'col-' + field.key">
+              <li v-for="field in config.displayFields || []" :key="field.key">
+                <a 
+                  class="dropdown-item d-flex align-items-center py-2" 
+                  href="#"
+                  @click.stop.prevent="toggleColumn(field.key)"
+                >
+                  <div class="form-check mb-0" style="pointer-events: none;">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      :checked="visibleColumns[field.key]"
+                      readonly
+                    >
+                  </div>
+                  <span class="ms-2 text-wrap">
                     <i v-if="field.icon" :class="field.icon" class="me-2"></i>
                     {{ field.label }}
-                  </label>
-                </div>
+                  </span>
+                </a>
               </li>
               <li><hr class="dropdown-divider"></li>
               <li>
@@ -110,6 +122,7 @@
                   class="btn btn-sm btn-outline-primary w-100" 
                   @click="resetColumns"
                 >
+                  <i class="bi bi-arrow-clockwise me-1"></i>
                   Restablecer
                 </button>
               </li>
@@ -366,6 +379,8 @@ const emit = defineEmits(['toggleSelection', 'selectAll', 'clearSelection', 'ope
 // Estado reactivo
 const viewMode = ref('list')
 const visibleColumns = ref({})
+const showColumnMenu = ref(false)
+const columnsDropdownRef = ref(null)
 
 // Computed
 const allSelected = computed(() => {
@@ -388,7 +403,69 @@ const sortableFields = computed(() => {
 })
 
 // Métodos
+function toggleColumnMenu() {
+  showColumnMenu.value = !showColumnMenu.value
+}
+
+function getStorageKey() {
+  return `columns_${props.config?.name || 'default'}`
+}
+
 function initializeColumns() {
+  if (!props.config || !props.config.displayFields) return
+  
+  // Intentar cargar desde localStorage
+  const storageKey = getStorageKey()
+  const savedColumns = localStorage.getItem(storageKey)
+  
+  console.log('[DynamicListView] Inicializando columnas para:', storageKey)
+  console.log('[DynamicListView] Columnas guardadas:', savedColumns)
+  
+  if (savedColumns) {
+    try {
+      const parsed = JSON.parse(savedColumns)
+      // Validar que las columnas guardadas correspondan a los campos actuales
+      const validColumns = {}
+      props.config.displayFields.forEach(field => {
+        validColumns[field.key] = parsed[field.key] !== undefined ? parsed[field.key] : true
+      })
+      console.log('[DynamicListView] Columnas cargadas desde localStorage:', validColumns)
+      visibleColumns.value = validColumns
+      return
+    } catch (e) {
+      console.warn('Error parsing saved columns:', e)
+    }
+  }
+  
+  // Inicializar con todas las columnas visibles
+  const columns = {}
+  props.config.displayFields.forEach(field => {
+    columns[field.key] = true
+  })
+  console.log('[DynamicListView] Inicializando con todas las columnas visibles:', columns)
+  visibleColumns.value = columns
+}
+
+function saveColumnsToStorage() {
+  try {
+    const storageKey = getStorageKey()
+    console.log('[DynamicListView] Guardando columnas en localStorage:', storageKey, visibleColumns.value)
+    localStorage.setItem(storageKey, JSON.stringify(visibleColumns.value))
+  } catch (e) {
+    console.warn('Error saving columns to localStorage:', e)
+  }
+}
+
+function toggleColumn(fieldKey) {
+  console.log('[DynamicListView] toggleColumn llamada con:', fieldKey)
+  console.log('[DynamicListView] Valor actual:', visibleColumns.value[fieldKey])
+  visibleColumns.value[fieldKey] = !visibleColumns.value[fieldKey]
+  console.log('[DynamicListView] Nuevo valor:', visibleColumns.value[fieldKey])
+  console.log('[DynamicListView] visibleColumns completo:', visibleColumns.value)
+}
+
+function resetColumns() {
+  // Reinicializar todas las columnas como visibles
   if (!props.config || !props.config.displayFields) return
   
   const columns = {}
@@ -396,10 +473,14 @@ function initializeColumns() {
     columns[field.key] = true
   })
   visibleColumns.value = columns
-}
-
-function resetColumns() {
-  initializeColumns()
+  
+  // Limpiar localStorage
+  try {
+    const storageKey = getStorageKey()
+    localStorage.removeItem(storageKey)
+  } catch (e) {
+    console.warn('Error clearing columns from localStorage:', e)
+  }
 }
 
 function getNameField() {
@@ -573,6 +654,13 @@ function handleImageError(event) {
 
 // Lifecycle
 onMounted(() => {
+  // Click outside listener for custom dropdown
+  document.addEventListener('click', (event) => {
+    if (showColumnMenu.value && columnsDropdownRef.value && !columnsDropdownRef.value.contains(event.target)) {
+      showColumnMenu.value = false
+    }
+  })
+
   // initializeColumns() se llamará en el watcher cuando config esté disponible
   
   // Inicializar Bootstrap dropdowns
@@ -604,6 +692,12 @@ watch(() => props.config, (newConfig) => {
     initializeColumns()
   }
 }, { deep: true, immediate: true })
+
+// Watch para guardar las columnas visibles cuando cambien
+watch(visibleColumns, (newVal) => {
+  console.log('[DynamicListView] Columnas visibles cambiaron:', newVal)
+  saveColumnsToStorage()
+}, { deep: true })
 
 // Watch para reinicializar Bootstrap cuando cambie el modo de vista
 watch(() => viewMode.value, () => {
@@ -640,6 +734,8 @@ watch(() => viewMode.value, () => {
 .view-controls {
   display: flex;
   justify-content: flex-end;
+  position: relative;
+  z-index: 100;
 }
 
 .btn-group .btn.active {

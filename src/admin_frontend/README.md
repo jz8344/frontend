@@ -25,6 +25,20 @@ Navbar unificado reutilizable para todas las páginas del admin.
 - `@showHistory`: Emitido al hacer clic en historial
 - `@logout`: Emitido al cerrar sesión
 
+
+ "1. Composición de "Admin Unidades" (Versión Dinámica)
+Basado en tu captura de pantalla (ruta /admin/app/unidades), lo que estás viendo no es el archivo AdminUnidades.vue (que es una versión simple), sino el sistema de Apps Dinámicas. Se compone así:
+
+Vista Principal (DynamicApp.vue): Es el componente que recibe la ruta (ej. unidades) y carga la configuración correspondiente.
+Layout (DynamicAppLayout.vue): Es el "marco" que ves alrededor. Contiene:
+La barra de navegación superior (AdminNavbar).
+El título de la página y la descripción.
+La barra de controles (Botones "Nuevo", "Eliminar", y la barra de búsqueda).
+Componente de Lista (DynamicListView.vue): Es el componente interno que muestra los datos. Aquí es donde están los botones de "Lista", "Tarjetas", "Ordenar" y "Columnas".
+Configuración (appConfigs.js): Define qué columnas existen para 'unidades' (matricula, modelo, etc.)."
+
+
+
 ### 2. AdminLayout.vue
 Layout base que envuelve el navbar y proporciona estructura común.
 

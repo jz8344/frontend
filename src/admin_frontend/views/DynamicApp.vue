@@ -11,6 +11,8 @@
     :related-data="relatedData"
     :user-name="userName"
     :notification-count="unreadCount"
+    :current-sort-field="sortField"
+    :current-sort-direction="sortDirection"
     @search="handleSearch"
     @sort="handleSort"
     @create="handleCreate"

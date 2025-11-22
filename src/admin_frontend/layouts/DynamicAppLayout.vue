@@ -157,6 +157,14 @@ const props = defineProps({
   notificationCount: {
     type: Number,
     default: 0
+  },
+  currentSortField: {
+    type: String,
+    default: ''
+  },
+  currentSortDirection: {
+    type: String,
+    default: 'asc'
   }
 })
 
@@ -200,16 +208,47 @@ const filteredItems = computed(() => {
   }
   
   // Aplicar ordenamiento
-  if (sortField.value) {
+  const fieldKey = props.currentSortField || sortField.value
+  const direction = props.currentSortDirection || sortDirection.value
+
+  if (fieldKey) {
+    // Encontrar la configuración del campo para ver si tiene un getValue personalizado
+    const fieldConfig = props.appConfig.displayFields?.find(f => f.key === fieldKey)
+
     filtered.sort((a, b) => {
-      const aVal = getNestedValue(a, sortField.value) || ''
-      const bVal = getNestedValue(b, sortField.value) || ''
+      let aVal, bVal
       
-      if (sortDirection.value === 'asc') {
-        return aVal.toString().localeCompare(bVal.toString())
+      if (fieldConfig && typeof fieldConfig.getValue === 'function') {
+        try {
+          aVal = fieldConfig.getValue(a)
+          bVal = fieldConfig.getValue(b)
+        } catch (e) {
+          aVal = getNestedValue(a, fieldKey)
+          bVal = getNestedValue(b, fieldKey)
+        }
       } else {
-        return bVal.toString().localeCompare(aVal.toString())
+        aVal = getNestedValue(a, fieldKey)
+        bVal = getNestedValue(b, fieldKey)
       }
+      
+      if (aVal === bVal) return 0
+      if (aVal === null || aVal === undefined) return 1
+      if (bVal === null || bVal === undefined) return -1
+      
+      const modifier = direction === 'asc' ? 1 : -1
+      
+      // Comparación numérica si ambos son números
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return (aVal - bVal) * modifier
+      }
+      
+      // Comparación numérica si ambos son strings numéricos
+      if (!isNaN(parseFloat(aVal)) && !isNaN(parseFloat(bVal)) && isFinite(aVal) && isFinite(bVal)) {
+        return (parseFloat(aVal) - parseFloat(bVal)) * modifier
+      }
+      
+      // Comparación de cadenas
+      return String(aVal).localeCompare(String(bVal)) * modifier
     })
   }
   
