@@ -632,6 +632,19 @@ const visibleFields = computed(() => {
     if (field.type === 'password' && props.isEditing) {
       return false
     }
+    
+    // Ocultar campos marcados como editOnly cuando estamos creando
+    if (field.editOnly && !props.isEditing) {
+      return false
+    }
+    
+    // Evaluar condición showIf (para campos condicionales)
+    if (field.showIf) {
+      const conditionField = field.showIf.field
+      const conditionValue = field.showIf.value
+      return form[conditionField] === conditionValue
+    }
+    
     return true
   })
 })

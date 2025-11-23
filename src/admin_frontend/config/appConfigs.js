@@ -1147,6 +1147,17 @@ export const appConfigs = {
         colClass: 'col-md-6'
       },
       {
+        key: 'capacidad_maxima',
+        label: 'Capacidad Máxima',
+        type: 'number',
+        required: true,
+        min: 1,
+        max: 100,
+        icon: 'bi bi-people',
+        colClass: 'col-md-6',
+        help: 'Número máximo de estudiantes permitidos'
+      },
+      {
         key: 'estado',
         label: 'Estado del Viaje',
         type: 'select',
